@@ -14,6 +14,7 @@
             margin: 0; 
             padding: 30px 20px; 
             line-height: 1.8;
+            -webkit-font-smoothing: antialiased;
         }
         
         .container {
@@ -32,69 +33,30 @@
             box-shadow: 0 4px 20px rgba(118, 75, 162, 0.1);
         }
 
-        h1 {
-            font-size: 2.5em;
-            color: #4a3b6b;
-            margin: 0 0 10px 0;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            color: #7b6d92;
-            font-size: 1.1em;
-            font-weight: 500;
-            margin: 0 0 15px 0;
-        }
+        h1 { font-size: 2.5em; color: #4a3b6b; margin: 0 0 10px 0; letter-spacing: 2px; }
+        .subtitle { color: #7b6d92; font-size: 1.1em; font-weight: 500; margin: 0 0 15px 0; }
 
         /* 排单统计徽章 */
         .stats-badge {
-            display: inline-block;
-            background: #fff;
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 0.95em;
-            font-weight: bold;
-            color: #8e54e9;
-            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.15);
-            border: 1px solid #ebdff5;
+            display: inline-block; background: #fff; padding: 8px 20px; border-radius: 30px;
+            font-size: 0.95em; font-weight: bold; color: #8e54e9;
+            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.15); border: 1px solid #ebdff5;
         }
-
-        .stats-badge span {
-            font-size: 1.3em;
-            color: #e53e3e;
-            margin: 0 4px;
-        }
+        .stats-badge span { font-size: 1.3em; color: #e53e3e; margin: 0 4px; }
 
         /* ================= 标签页按钮区域 ================= */
-        .tabs {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
+        .tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn {
-            background: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #6b4e9e;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 1.1em;
+            font-weight: bold; color: #6b4e9e; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-
         .tab-btn:hover, .tab-btn.active {
-            background: #8e54e9;
-            color: white;
-            border-color: #8e54e9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(142, 84, 233, 0.3);
+            background: #8e54e9; color: white; border-color: #8e54e9;
+            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(142, 84, 233, 0.3);
         }
 
-        /* ================= 卡片样式 ================= */
+        /* ================= 卡片高级弹性切换动画 ================= */
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
@@ -102,26 +64,30 @@
             padding: 30px;
             box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            display: none; 
-            animation: fadeIn 0.4s ease-in-out;
+            display: none; /* 默认隐藏 */
         }
 
-        .card.active { display: block; }
+        .card.active { 
+            display: block; 
+            /* 高级弹性动画：从下方带惯性滑入，同时伴随透明度渐变 */
+            animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+        }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* 按钮点击时的 Q 弹效果 */
+        .tab-btn:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* 核心动画帧 */
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         h2 {
-            font-size: 1.3em;
-            color: #6b4e9e;
-            border-bottom: 2px dashed #d8ceea;
-            padding-bottom: 10px;
-            margin-top: 0;
-            margin-bottom: 20px;
+            font-size: 1.3em; color: #6b4e9e; border-bottom: 2px dashed #d8ceea;
+            padding-bottom: 10px; margin-top: 0; margin-bottom: 20px;
         }
-
         .price { color: #e53e3e; font-weight: bold; font-size: 1.1em; }
         ul { padding-left: 24px; margin: 0; list-style-type: disc; }
         li { margin-bottom: 10px; color: #4a5568; }
@@ -130,77 +96,32 @@
 
         /* ================= 深度美化输入框 UI ================= */
         .wl-panel {
-            border-radius: 16px !important;
-            border: 1px solid #e2d8f0 !important; 
-            background: #ffffff !important;
-            box-shadow: 0 10px 30px rgba(142, 84, 233, 0.05) !important;
-            padding: 20px !important;
-            margin-bottom: 20px !important;
-            transition: all 0.3s ease;
+            border-radius: 16px !important; border: 1px solid #e2d8f0 !important; 
+            background: #ffffff !important; box-shadow: 0 10px 30px rgba(142, 84, 233, 0.05) !important;
+            padding: 20px !important; margin-bottom: 20px !important; transition: all 0.3s ease;
         }
-
         .wl-header label, .wl-editor {
-            border-radius: 8px !important;
-            border: 1px solid #ebe5f2 !important;
-            background: #fbfbfd !important;
-            transition: all 0.3s ease;
+            border-radius: 8px !important; border: 1px solid #ebe5f2 !important; background: #fbfbfd !important; transition: all 0.3s ease;
         }
-
         .wl-header input:focus, .wl-editor:focus {
-            background: #ffffff !important;
-            border-color: #8e54e9 !important;
-            box-shadow: 0 0 0 4px rgba(142, 84, 233, 0.15) !important; 
-            outline: none !important;
+            background: #ffffff !important; border-color: #8e54e9 !important;
+            box-shadow: 0 0 0 4px rgba(142, 84, 233, 0.15) !important; outline: none !important;
         }
-
-        .wl-editor {
-            min-height: 120px !important;
-            padding: 12px !important;
-            font-size: 14px !important;
-        }
-
+        .wl-editor { min-height: 120px !important; padding: 12px !important; font-size: 14px !important; }
         .wl-footer { background: transparent !important; }
-
         .wl-btn.primary {
-            background: linear-gradient(135deg, #9b7edb 0%, #6b4e9e 100%) !important;
-            border: none !important;
-            border-radius: 20px !important;
-            padding: 8px 25px !important;
-            font-weight: 600 !important;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.3) !important;
-            transition: all 0.3s ease !important;
+            background: linear-gradient(135deg, #9b7edb 0%, #6b4e9e 100%) !important; border: none !important;
+            border-radius: 20px !important; padding: 8px 25px !important; font-weight: 600 !important;
+            letter-spacing: 1px; box-shadow: 0 4px 15px rgba(142, 84, 233, 0.3) !important; transition: all 0.3s ease !important;
         }
-
-        .wl-btn.primary:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(142, 84, 233, 0.5) !important;
-        }
-
+        .wl-btn.primary:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(142, 84, 233, 0.5) !important; }
         .wl-header-item:not(:last-child) { border-bottom: none !important; }
 
-        /* ================= 隐私保护核心：只显示自己刚发的 ================= */
-        /* 隐藏系统提示（如：暂无评论），保持界面干净 */
+        /* ================= 隐私核心：隐藏其他评论，但不影响输入框 ================= */
+        /* 隐藏所有已经发出来的评论卡片 */
+        .wl-card { display: none !important; }
+        /* 隐藏“暂无评论”的提示 */
         .wl-empty { display: none !important; }
-        
-        /* 默认隐藏所有评论列表 */
-        .wl-comment { display: none !important; }
-
-        /* 发单成功后，显式展示的样式 */
-        .wl-comment.show-self {
-            display: grid !important;
-            grid-template-columns: repeat(1, 1fr) !important; 
-            gap: 16px !important; 
-            margin-top: 20px !important;
-        }
-        
-        /* 设置自己发的那一条卡片样式 */
-        .wl-comment.show-self .wl-item {
-            background: #fdfcff !important;
-            border: 1px solid #e2d8f0 !important;
-            border-radius: 12px !important;
-            padding: 16px !important;
-        }
         
     </style>
 </head>
@@ -210,18 +131,15 @@
     <div class="header">
         <h1>伍壹 (WuYi551) 的排单处</h1>
         <p class="subtitle">感谢你的喜欢与支持！欢迎随时留言排单 ✨</p>
-        
-        <!-- 统计徽章 -->
         <div class="stats-badge">
             目前已收到 <span class="waline-comment-count" data-path="/"></span> 份排单
         </div>
     </div>
 
-    <!-- 标签页按钮 -->
     <div class="tabs">
-        <div class="tab-btn active" onclick="switchTab('info')">📋 约稿说明</div>
-        <div class="tab-btn" onclick="switchTab('gallery')">🎨 例图展示</div>
-        <div class="tab-btn" onclick="switchTab('board')">📝 填写排单</div>
+        <div class="tab-btn active" onclick="switchTab('info', this)">📋 约稿说明</div>
+        <div class="tab-btn" onclick="switchTab('gallery', this)">🎨 例图展示</div>
+        <div class="tab-btn" onclick="switchTab('board', this)">📝 填写排单</div>
     </div>
 
     <!-- 标签页 1：约稿说明 -->
@@ -264,7 +182,6 @@
             为了保护您的隐私，所有排单记录<b>仅管理员可见</b>。<br>提交后我会通过您留下的邮箱/QQ联系您。
         </p>
         
-        <!-- Waline 评论区代码 -->
         <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
         <div id="waline"></div>
         <script type="module">
@@ -277,45 +194,48 @@
             comment: true, 
             locale: {
               placeholder: '请写下你的约稿需求（如：头像/立绘/壁纸）、QQ或微信号，点击上方图片按钮可上传参考图...',
+              success: '发送成功！' 
             },
             list: true,           
             listSorting: 'newest',
           }).then(() => {
-              // 监听发送成功事件
-              const observer = new MutationObserver((mutations) => {
-                  mutations.forEach((mutation) => {
-                      if (mutation.addedNodes.length) {
-                          // 当有新节点（评论）加入时，给评论区加上 show-self 类，展示自己刚发的评论
-                          const commentList = document.querySelector('.wl-comment');
-                          if (commentList && !commentList.classList.contains('show-self')) {
-                              commentList.classList.add('show-self');
-                              // 顺带弹个窗提示一下
-                              setTimeout(() => {
+              setTimeout(() => {
+                  const submitBtn = document.querySelector('.wl-btn.primary');
+                  if(submitBtn){
+                      submitBtn.addEventListener('click', () => {
+                          setTimeout(() => {
+                              const editor = document.querySelector('.wl-editor');
+                              if(editor && editor.value === ''){
                                   alert("🎉 提交成功！\n你的排单已安全送达，请耐心等待我联系你~");
-                              }, 300);
-                          }
-                      }
-                  });
-              });
-
-              // 开始观察 DOM 变化
-              const targetNode = document.querySelector('#waline');
-              if (targetNode) {
-                  observer.observe(targetNode, { childList: true, subtree: true });
-              }
+                              }
+                          }, 1000);
+                      });
+                  }
+              }, 1000);
           });
         </script>
     </div>
-
 </div>
 
 <!-- 切换标签页的代码 -->
 <script>
-    function switchTab(tabId) {
-        document.querySelectorAll('.card').forEach(card => { card.classList.remove('active'); });
-        document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); });
-        document.getElementById(tabId).classList.add('active');
-        event.target.classList.add('active');
+    function switchTab(tabId, btnElement) {
+        const cards = document.querySelectorAll('.card');
+        const btns = document.querySelectorAll('.tab-btn');
+        
+        // 1. 隐藏所有卡片，移除按钮高亮
+        cards.forEach(card => { card.classList.remove('active'); });
+        btns.forEach(btn => { btn.classList.remove('active'); });
+        
+        // 2. 获取目标卡片
+        const targetCard = document.getElementById(tabId);
+        
+        // 3. 强制浏览器重绘（为了让动画每次都能重新触发）
+        void targetCard.offsetWidth;
+        
+        // 4. 显示目标卡片，高亮按钮
+        targetCard.classList.add('active');
+        btnElement.classList.add('active');
     }
 </script>
 
