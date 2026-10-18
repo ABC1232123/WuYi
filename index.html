@@ -14,7 +14,6 @@
             margin: 0; 
             padding: 30px 20px; 
             line-height: 1.8;
-            /* 去除高度限制，让页面自然流动 */
         }
         
         .container {
@@ -44,7 +43,26 @@
             color: #7b6d92;
             font-size: 1.1em;
             font-weight: 500;
-            margin: 0;
+            margin: 0 0 15px 0;
+        }
+
+        /* 排单统计徽章 */
+        .stats-badge {
+            display: inline-block;
+            background: #fff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #8e54e9;
+            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.15);
+            border: 1px solid #ebdff5;
+        }
+
+        .stats-badge span {
+            font-size: 1.3em;
+            color: #e53e3e;
+            margin: 0 4px;
         }
 
         /* ================= 标签页按钮区域 ================= */
@@ -76,7 +94,7 @@
             box-shadow: 0 5px 15px rgba(142, 84, 233, 0.3);
         }
 
-        /* ================= 毛玻璃卡片（内容区） ================= */
+        /* ================= 卡片样式 ================= */
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
@@ -84,14 +102,11 @@
             padding: 30px;
             box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            display: none; /* 默认隐藏所有卡片 */
+            display: none; 
             animation: fadeIn 0.4s ease-in-out;
         }
 
-        /* 只有带 active 类的卡片才显示 */
-        .card.active {
-            display: block; 
-        }
+        .card.active { display: block; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -108,60 +123,85 @@
         }
 
         .price { color: #e53e3e; font-weight: bold; font-size: 1.1em; }
-        
         ul { padding-left: 24px; margin: 0; list-style-type: disc; }
         li { margin-bottom: 10px; color: #4a5568; }
         li::marker { color: #8e54e9; }
-        
         .notice-text { font-size: 0.9em; color: #888; margin-top: 10px; }
-        
-        /* ================= 例图区域 ================= */
-        .example-img {
-            width: 100%;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
 
-        /* ================= 评论区双列展示 ================= */
-        #waline {
-            max-height: 60vh; /* 占屏幕的60%高度 */
-            overflow-y: auto; 
-            padding: 10px;
-            background: rgba(250, 250, 250, 0.5);
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-        }
-
-        #waline::-webkit-scrollbar { width: 6px; }
-        #waline::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-
-        .wl-comment {
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important; 
-            gap: 16px !important; 
-            align-items: start !important;
-        }
-
-        .wl-item {
+        /* ================= 深度美化输入框 UI ================= */
+        .wl-panel {
+            border-radius: 16px !important;
+            border: 1px solid #e2d8f0 !important; 
             background: #ffffff !important;
+            box-shadow: 0 10px 30px rgba(142, 84, 233, 0.05) !important;
+            padding: 20px !important;
+            margin-bottom: 20px !important;
+            transition: all 0.3s ease;
+        }
+
+        .wl-header label, .wl-editor {
+            border-radius: 8px !important;
+            border: 1px solid #ebe5f2 !important;
+            background: #fbfbfd !important;
+            transition: all 0.3s ease;
+        }
+
+        .wl-header input:focus, .wl-editor:focus {
+            background: #ffffff !important;
+            border-color: #8e54e9 !important;
+            box-shadow: 0 0 0 4px rgba(142, 84, 233, 0.15) !important; 
+            outline: none !important;
+        }
+
+        .wl-editor {
+            min-height: 120px !important;
+            padding: 12px !important;
+            font-size: 14px !important;
+        }
+
+        .wl-footer { background: transparent !important; }
+
+        .wl-btn.primary {
+            background: linear-gradient(135deg, #9b7edb 0%, #6b4e9e 100%) !important;
+            border: none !important;
+            border-radius: 20px !important;
+            padding: 8px 25px !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.3) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .wl-btn.primary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(142, 84, 233, 0.5) !important;
+        }
+
+        .wl-header-item:not(:last-child) { border-bottom: none !important; }
+
+        /* ================= 隐私保护核心：只显示自己刚发的 ================= */
+        /* 隐藏系统提示（如：暂无评论），保持界面干净 */
+        .wl-empty { display: none !important; }
+        
+        /* 默认隐藏所有评论列表 */
+        .wl-comment { display: none !important; }
+
+        /* 发单成功后，显式展示的样式 */
+        .wl-comment.show-self {
+            display: grid !important;
+            grid-template-columns: repeat(1, 1fr) !important; 
+            gap: 16px !important; 
+            margin-top: 20px !important;
+        }
+        
+        /* 设置自己发的那一条卡片样式 */
+        .wl-comment.show-self .wl-item {
+            background: #fdfcff !important;
+            border: 1px solid #e2d8f0 !important;
             border-radius: 12px !important;
             padding: 16px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
-            border: 1px solid #f1f5f9 !important;
         }
-
-        .wl-item .wl-content { font-size: 14px !important; }
         
-        .wl-btn.primary {
-            background: linear-gradient(135deg, #8e54e9 0%, #4776e6 100%) !important;
-            border-radius: 8px !important;
-        }
-
-        @media (max-width: 650px) {
-            .wl-comment { grid-template-columns: 1fr !important; }
-            .tabs { flex-wrap: wrap; }
-        }
     </style>
 </head>
 <body>
@@ -170,13 +210,18 @@
     <div class="header">
         <h1>伍壹 (WuYi551) 的排单处</h1>
         <p class="subtitle">感谢你的喜欢与支持！欢迎随时留言排单 ✨</p>
+        
+        <!-- 统计徽章 -->
+        <div class="stats-badge">
+            目前已收到 <span class="waline-comment-count" data-path="/"></span> 份排单
+        </div>
     </div>
 
     <!-- 标签页按钮 -->
     <div class="tabs">
         <div class="tab-btn active" onclick="switchTab('info')">📋 约稿说明</div>
         <div class="tab-btn" onclick="switchTab('gallery')">🎨 例图展示</div>
-        <div class="tab-btn" onclick="switchTab('board')">📝 在线排单</div>
+        <div class="tab-btn" onclick="switchTab('board')">📝 填写排单</div>
     </div>
 
     <!-- 标签页 1：约稿说明 -->
@@ -203,25 +248,20 @@
         <p><strong>委托群：</strong> 1108360511</p>
     </div>
 
-    <!-- 标签页 2：例图展示（你需要自己传图替换这里的 src） -->
+    <!-- 标签页 2：例图展示 -->
     <div id="gallery" class="card">
-        <h2>🖼️ 头像例图</h2>
-        <!-- 把 touxiang.jpg 换成你上传到 GitHub 的图片名字 -->
-        <img src="touxiang.jpg" alt="头像例图" class="example-img" onerror="this.style.display='none'">
-        <p style="color: #888; font-size: 0.9em; text-align: center;">（上传图片后，这里会显示您的例图）</p>
-
-        <h2 style="margin-top: 30px;">🖼️ 立绘例图</h2>
-        <img src="litu.jpg" alt="立绘例图" class="example-img" onerror="this.style.display='none'">
-
-        <h2 style="margin-top: 30px;">🖼️ 壁纸类例图</h2>
-        <img src="bizhi.jpg" alt="壁纸例图" class="example-img" onerror="this.style.display='none'">
+        <h2>🖼️ 例图展示</h2>
+        <p style="text-align: center; color: #888;">请上传你的图片到 GitHub，并在此处修改文件名。</p>
+        <img src="touxiang.jpg" alt="头像例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
+        <img src="litu.jpg" alt="立绘例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
+        <img src="bizhi.jpg" alt="壁纸例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
     </div>
 
-    <!-- 标签页 3：在线排单 -->
+    <!-- 标签页 3：填写排单 -->
     <div id="board" class="card">
-        <h2 style="text-align: center; border: none; color: #8e54e9; margin-bottom: 5px;">📝 在线排单留言板</h2>
+        <h2 style="text-align: center; border: none; color: #8e54e9; margin-bottom: 5px;">📝 提交你的排单信息</h2>
         <p style="text-align: center; font-size: 0.9em; color: #888; margin-bottom: 20px;">
-            无需注册，填写昵称和邮箱即可留言排单。<br>请务必留下您的 QQ 或微信号方便我联系您！
+            为了保护您的隐私，所有排单记录<b>仅管理员可见</b>。<br>提交后我会通过您留下的邮箱/QQ联系您。
         </p>
         
         <!-- Waline 评论区代码 -->
@@ -234,29 +274,46 @@
             serverURL: 'https://comment.wuyi.quest', 
             meta: ['nick', 'mail', 'link'], 
             requiredMeta: ['nick', 'mail'], 
+            comment: true, 
             locale: {
-              placeholder: '请在这里写下你的约稿需求（如：头像/立绘/壁纸）、联系方式，或直接上传参考图...',
+              placeholder: '请写下你的约稿需求（如：头像/立绘/壁纸）、QQ或微信号，点击上方图片按钮可上传参考图...',
             },
             list: true,           
-            listSorting: 'newest' 
+            listSorting: 'newest',
+          }).then(() => {
+              // 监听发送成功事件
+              const observer = new MutationObserver((mutations) => {
+                  mutations.forEach((mutation) => {
+                      if (mutation.addedNodes.length) {
+                          // 当有新节点（评论）加入时，给评论区加上 show-self 类，展示自己刚发的评论
+                          const commentList = document.querySelector('.wl-comment');
+                          if (commentList && !commentList.classList.contains('show-self')) {
+                              commentList.classList.add('show-self');
+                              // 顺带弹个窗提示一下
+                              setTimeout(() => {
+                                  alert("🎉 提交成功！\n你的排单已安全送达，请耐心等待我联系你~");
+                              }, 300);
+                          }
+                      }
+                  });
+              });
+
+              // 开始观察 DOM 变化
+              const targetNode = document.querySelector('#waline');
+              if (targetNode) {
+                  observer.observe(targetNode, { childList: true, subtree: true });
+              }
           });
         </script>
     </div>
 
 </div>
 
-<!-- 切换标签页的魔法代码 -->
+<!-- 切换标签页的代码 -->
 <script>
     function switchTab(tabId) {
-        // 隐藏所有卡片
-        document.querySelectorAll('.card').forEach(card => {
-            card.classList.remove('active');
-        });
-        // 取消所有按钮的高亮
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        // 显示目标卡片和按钮高亮
+        document.querySelectorAll('.card').forEach(card => { card.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); });
         document.getElementById(tabId).classList.add('active');
         event.target.classList.add('active');
     }
