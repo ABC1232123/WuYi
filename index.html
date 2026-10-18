@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wuyi.quest | 约稿排单处</title>
+    <title>wuyi.quest | 伍壹的约稿排单处</title>
     <style>
-        /* ================= 整体页面风格 ================= */
+        /* ================= 整体页面风格（淡紫色调呼应接稿条） ================= */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f3effa 0%, #e0dced 100%);
             background-attachment: fixed;
             color: #333;
             margin: 0; 
@@ -18,7 +18,7 @@
         }
         
         .container {
-            max-width: 900px; /* 稍微加宽一点，让双列更好看 */
+            max-width: 850px;
             margin: 0 auto; 
         }
 
@@ -26,116 +26,110 @@
         .header {
             text-align: center;
             margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(118, 75, 162, 0.1);
         }
 
         h1 {
-            font-size: 2.8em;
-            color: #2c3e50;
+            font-size: 2.6em;
+            color: #4a3b6b;
             margin-bottom: 10px;
             letter-spacing: 2px;
         }
 
         .subtitle {
-            color: #666;
+            color: #7b6d92;
             font-size: 1.1em;
+            font-weight: 500;
         }
 
         /* ================= 毛玻璃卡片 ================= */
         .card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-radius: 16px;
-            padding: 35px;
+            padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         h2 {
-            font-size: 1.4em;
-            color: #34495e;
-            border-bottom: 2px dashed #e2e8f0;
-            padding-bottom: 12px;
+            font-size: 1.3em;
+            color: #6b4e9e;
+            border-bottom: 2px dashed #d8ceea;
+            padding-bottom: 10px;
             margin-top: 0;
+            margin-bottom: 20px;
         }
 
-        p, li { color: #4a5568; }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 12px; }
-
-        /* ================= 评论区双列展示核心代码 ================= */
+        /* 价格高亮 */
+        .price { color: #e53e3e; font-weight: bold; font-size: 1.1em; }
         
-        /* 1. 评论区外框（限制高度，自带美化滚动条） */
+        /* 列表排版 */
+        ul { padding-left: 20px; margin: 0; }
+        li { margin-bottom: 12px; color: #4a5568; }
+        
+        /* 提示小字 */
+        .notice-text { font-size: 0.9em; color: #888; margin-top: 10px; }
+        
+        /* ================= 评论区双列展示核心代码 ================= */
         #waline {
-            max-height: 700px; /* 评论区最高高度，超过就在框里滑动 */
+            max-height: 600px; 
             overflow-y: auto; 
-            padding: 10px 15px 10px 10px;
+            padding: 10px;
             background: rgba(250, 250, 250, 0.5);
             border-radius: 12px;
-            border: 1px solid #eee;
-            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+            margin-top: 10px;
         }
 
-        /* 自定义浏览器滚动条（让它变得极细且高级） */
         #waline::-webkit-scrollbar { width: 6px; }
-        #waline::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
-        }
-        #waline::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        #waline::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
-        /* 2. 将评论列表强制变成双列网格 */
-        .wl-list {
+        /* 强行双列 */
+        .wl-comment {
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important; /* 两列平分 */
-            gap: 15px !important; /* 卡片之间的间距 */
+            grid-template-columns: repeat(2, 1fr) !important; 
+            gap: 16px !important; 
+            align-items: start !important;
         }
 
-        /* 3. 把每一条评论变成精美的小卡片 */
-        .wl-card {
+        /* 评论卡片化 */
+        .wl-item {
             background: #ffffff !important;
             border-radius: 12px !important;
             padding: 16px !important;
-            margin-bottom: 0 !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
             border: 1px solid #f1f5f9 !important;
-            transition: all 0.3s ease !important; /* 加个过渡动画 */
-            display: flex;
-            flex-direction: column;
+            transition: all 0.3s ease !important;
         }
 
-        /* 鼠标悬浮时的灵动效果 */
-        .wl-card:hover {
+        .wl-item:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
-            border-color: #e2e8f0 !important;
+            box-shadow: 0 10px 25px rgba(118, 75, 162, 0.15) !important;
+            border-color: #d8ceea !important;
         }
 
-        /* 调整评论内部文字的排版 */
-        .wl-card .wl-content {
-            font-size: 14px !important;
-            color: #475569;
-            margin-top: 8px;
-            flex-grow: 1;
+        .wl-item .wl-content { font-size: 14px !important; line-height: 1.6 !important; }
+
+        /* 手机端自适应单列 */
+        @media (max-width: 650px) {
+            .wl-comment { grid-template-columns: 1fr !important; }
+            #waline { max-height: none; } 
         }
 
-        /* 手机端自动变成单列（不然字太小看不清） */
-        @media (max-width: 600px) {
-            .wl-list {
-                grid-template-columns: 1fr !important; /* 手机上一列显示 */
-            }
-            #waline { max-height: none; } /* 手机上不限制高度，尽情滑 */
-        }
-
-        /* ================= 原生输入框微调 ================= */
-        .wl-panel { border-radius: 12px !important; border: 1px solid #e2e8f0 !important; }
+        /* 输入框按钮微调 */
+        .wl-panel { border-radius: 12px !important; }
         .wl-editor:focus, .wl-input:focus {
-            border-color: #667eea !important;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+            border-color: #9b7edb !important;
+            box-shadow: 0 0 0 3px rgba(155, 126, 219, 0.2) !important;
         }
         .wl-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: linear-gradient(135deg, #8e54e9 0%, #4776e6 100%) !important;
             border: none !important;
             border-radius: 8px !important;
             font-weight: 500 !important;
@@ -146,49 +140,21 @@
 
 <div class="container">
     <div class="header">
-        <h1>wuyi 的约稿排单处</h1>
-        <p class="subtitle">感谢你的喜欢与支持 ✨</p>
+        <h1>伍壹 (WuYi551) 的排单处</h1>
+        <p class="subtitle">感谢你的喜欢与支持！欢迎随时留言排单 ✨</p>
     </div>
 
+    <!-- 约稿价格区块 -->
     <div class="card">
-        <h2>📌 约稿流程</h2>
-        <p>1. 在下方留言板填写你的<strong>联系方式（邮箱必填）</strong>。</p>
-        <p>2. 留下你对稿件的具体需求（如：角色设定、画面内容、参考图链接等）。</p>
-        <p>3. 看到留言后，我会尽快通过你留下的邮箱或私信联系你确认排单。</p>
-    </div>
-
-    <div class="card">
-        <h2>⚠️ 注意事项</h2>
+        <h2>🎨 约稿价目表</h2>
         <ul>
-            <li>请尽量把需求描述清楚，如果有参考图，可以发图片链接。</li>
-            <li>排单顺序以确认收到定金的时间为准。</li>
-            <li>如果在留言板不方便发图，可以先留个联系方式，我们私下详聊。</li>
+            <li><strong>头像：</strong> <span class="price">20 / p</span></li>
+            <li><strong>立绘：</strong> <span class="price">80 / p</span></li>
+            <li><strong>壁纸类：</strong> <span class="price">240 / p</span></li>
         </ul>
+        <p class="notice-text">* 价格浮动：双人 *1.5，加急 *2，复杂视情况加价。</p>
+        <p class="notice-text">* 更多例图请参考约稿条或空间相册。</p>
     </div>
 
-    <div class="card">
-        <h2 style="text-align: center; border: none; color: #667eea; margin-bottom: 5px;">📝 填写你的排单信息</h2>
-        <p style="text-align: center; font-size: 0.9em; color: #888; margin-bottom: 20px;">无需注册，填写昵称和邮箱即可留言排单。</p>
-        
-        <!-- Waline 评论区代码 -->
-        <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
-        <div id="waline"></div>
-        <script type="module">
-          import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
-          init({
-            el: '#waline',
-            serverURL: 'https://comment.wuyi.quest', 
-            meta: ['nick', 'mail', 'link'], 
-            requiredMeta: ['nick', 'mail'], 
-            locale: {
-              placeholder: '请在这里写下你的约稿需求、联系方式或想说的话...',
-            },
-            mode: 'list',       // 强制列表模式
-            listSorting: 'newest' // 最新排单在最前面
-          });
-        </script>
-    </div>
-</div>
-
-</body>
-</html>
+    <!-- 约稿须知区块 -->
+    <d
