@@ -17,22 +17,14 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        .container {
-            max-width: 850px;
-            margin: 0 auto; 
-        }
+        .container { max-width: 850px; margin: 0 auto; }
 
         /* ================= 顶部标题区 ================= */
         .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 30px 20px;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 16px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(118, 75, 162, 0.1);
+            text-align: center; margin-bottom: 20px; padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.7); border-radius: 16px;
+            backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(118, 75, 162, 0.1);
         }
-
         h1 { font-size: 2.5em; color: #4a3b6b; margin: 0 0 10px 0; letter-spacing: 2px; }
         .subtitle { color: #7b6d92; font-size: 1.1em; font-weight: 500; margin: 0 0 15px 0; }
 
@@ -58,31 +50,18 @@
 
         /* ================= 卡片高级弹性切换动画 ================= */
         .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            display: none; /* 默认隐藏 */
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+            border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.6); display: none;
         }
-
-        .card.active { 
-            display: block; 
-            animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
-        }
-
+        .card.active { display: block; animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .tab-btn:active { transform: scale(0.95) !important; }
-
         @keyframes slideUpFade {
             0% { opacity: 0; transform: translateY(30px) scale(0.98); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        h2 {
-            font-size: 1.3em; color: #6b4e9e; border-bottom: 2px dashed #d8ceea;
-            padding-bottom: 10px; margin-top: 0; margin-bottom: 20px;
-        }
+        h2 { font-size: 1.3em; color: #6b4e9e; border-bottom: 2px dashed #d8ceea; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
         .price { color: #e53e3e; font-weight: bold; font-size: 1.1em; }
         ul { padding-left: 24px; margin: 0; list-style-type: disc; }
         li { margin-bottom: 10px; color: #4a5568; }
@@ -117,27 +96,23 @@
         .wl-empty { display: none !important; }
 
         /* ================= 后台管理按钮样式 ================= */
-        .admin-btn-container {
-            text-align: right;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #e2d8f0;
+        .admin-btn-container { text-align: right; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2d8f0; }
+        .admin-btn { font-size: 0.85em; color: #a893c7; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
+        .admin-btn:hover { color: #6b4e9e; background: #f3effa; }
+
+        /* ================= 新增：排单隐私机制说明框 ================= */
+        .privacy-notice {
+            background: #f8f6fc;
+            border-left: 4px solid #8e54e9;
+            padding: 15px 20px;
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: #5a4b7c;
+            line-height: 1.6;
+            box-shadow: 0 2px 10px rgba(142, 84, 233, 0.03);
         }
-        .admin-btn {
-            font-size: 0.85em;
-            color: #a893c7;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
-        .admin-btn:hover {
-            color: #6b4e9e;
-            background: #f3effa;
-        }
+        .privacy-notice strong { color: #8e54e9; }
     </style>
 </head>
 <body>
@@ -193,10 +168,13 @@
     <!-- 标签页 3：填写排单 -->
     <div id="board" class="card">
         <h2 style="text-align: center; border: none; color: #8e54e9; margin-bottom: 5px;">📝 提交你的排单信息</h2>
-        <p style="text-align: center; font-size: 0.9em; color: #888; margin-bottom: 20px;">
-            为了保护您的隐私，所有排单记录<b>仅管理员可见</b>。<br>提交后我会通过您留下的邮箱/QQ联系您。
-        </p>
         
+        <!-- 新增的隐私说明框 -->
+        <div class="privacy-notice">
+            🔒 <strong>隐私与排单机制说明：</strong><br>
+            为了让您的隐私得到绝对保护，且防止同行恶意截单，本站开启了<b>“私密排单通道”</b>。您提交的排单信息以及上传的参考图，<b>其他访客完全不可见</b>，仅管理员（伍壹本人）能在后台收到。提交成功后页面会弹出提示，请放心填写！
+        </div>
+
         <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
         <div id="waline"></div>
         <script type="module">
@@ -230,7 +208,7 @@
           });
         </script>
 
-        <!-- 👇 这里是新增的后台管理入口 👇 -->
+        <!-- 后台管理入口 -->
         <div class="admin-btn-container">
             <a href="https://comment.wuyi.quest/ui" target="_blank" class="admin-btn">
                 ⚙️ 管理入口
