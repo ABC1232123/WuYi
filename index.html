@@ -69,16 +69,11 @@
 
         .card.active { 
             display: block; 
-            /* 高级弹性动画：从下方带惯性滑入，同时伴随透明度渐变 */
             animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
         }
 
-        /* 按钮点击时的 Q 弹效果 */
-        .tab-btn:active {
-            transform: scale(0.95) !important;
-        }
+        .tab-btn:active { transform: scale(0.95) !important; }
 
-        /* 核心动画帧 */
         @keyframes slideUpFade {
             0% { opacity: 0; transform: translateY(30px) scale(0.98); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -117,12 +112,32 @@
         .wl-btn.primary:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(142, 84, 233, 0.5) !important; }
         .wl-header-item:not(:last-child) { border-bottom: none !important; }
 
-        /* ================= 隐私核心：隐藏其他评论，但不影响输入框 ================= */
-        /* 隐藏所有已经发出来的评论卡片 */
+        /* ================= 隐私核心 ================= */
         .wl-card { display: none !important; }
-        /* 隐藏“暂无评论”的提示 */
         .wl-empty { display: none !important; }
-        
+
+        /* ================= 后台管理按钮样式 ================= */
+        .admin-btn-container {
+            text-align: right;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #e2d8f0;
+        }
+        .admin-btn {
+            font-size: 0.85em;
+            color: #a893c7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        .admin-btn:hover {
+            color: #6b4e9e;
+            background: #f3effa;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +229,14 @@
               }, 1000);
           });
         </script>
+
+        <!-- 👇 这里是新增的后台管理入口 👇 -->
+        <div class="admin-btn-container">
+            <a href="https://comment.wuyi.quest/ui" target="_blank" class="admin-btn">
+                ⚙️ 管理入口
+            </a>
+        </div>
+
     </div>
 </div>
 
@@ -223,17 +246,12 @@
         const cards = document.querySelectorAll('.card');
         const btns = document.querySelectorAll('.tab-btn');
         
-        // 1. 隐藏所有卡片，移除按钮高亮
         cards.forEach(card => { card.classList.remove('active'); });
         btns.forEach(btn => { btn.classList.remove('active'); });
         
-        // 2. 获取目标卡片
         const targetCard = document.getElementById(tabId);
-        
-        // 3. 强制浏览器重绘（为了让动画每次都能重新触发）
         void targetCard.offsetWidth;
         
-        // 4. 显示目标卡片，高亮按钮
         targetCard.classList.add('active');
         btnElement.classList.add('active');
     }
