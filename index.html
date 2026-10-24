@@ -3,250 +3,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wuyi.quest | 伍壹的约稿排单处</title>
+    <title>wuyi.quest | 伍壹的排单处</title>
+    <!-- 引入烟花特效库 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
-        /* ================= 整体页面风格 ================= */
+        /* ================= 全局风格：极简、优雅、高质感 ================= */
+        :root {
+            --bg-color: #f5f5f7; /* 苹果经典浅灰 */
+            --card-bg: #ffffff;
+            --text-main: #1d1d1f;
+            --text-sub: #86868b;
+            --theme-color: #5e5ce6; /* 高级莫兰迪紫/蓝 */
+            --theme-hover: #4b49c6;
+            --border-color: #e5e5ea;
+            --input-bg: #f5f5f7;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #f3effa 0%, #e0dced 100%);
-            background-attachment: fixed;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0; 
-            padding: 30px 20px; 
-            line-height: 1.8;
+            padding: 40px 20px; 
+            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
         }
         
-        .container { max-width: 850px; margin: 0 auto; }
+        .container { max-width: 760px; margin: 0 auto; }
 
-        /* ================= 顶部标题区 ================= */
+        /* ================= 顶部标题 ================= */
         .header {
-            text-align: center; margin-bottom: 20px; padding: 30px 20px;
-            background: rgba(255, 255, 255, 0.7); border-radius: 16px;
-            backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(118, 75, 162, 0.1);
+            text-align: center; margin-bottom: 30px;
         }
-        h1 { font-size: 2.5em; color: #4a3b6b; margin: 0 0 10px 0; letter-spacing: 2px; }
-        .subtitle { color: #7b6d92; font-size: 1.1em; font-weight: 500; margin: 0 0 15px 0; }
+        h1 { font-size: 2.2em; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 8px 0; color: var(--text-main); }
+        .subtitle { color: var(--text-sub); font-size: 1.05em; font-weight: 400; margin: 0 0 20px 0; }
 
-        /* 排单统计徽章 */
+        /* 排单统计（高级胶囊） */
         .stats-badge {
-            display: inline-block; background: #fff; padding: 8px 20px; border-radius: 30px;
-            font-size: 0.95em; font-weight: bold; color: #8e54e9;
-            box-shadow: 0 4px 15px rgba(142, 84, 233, 0.15); border: 1px solid #ebdff5;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(94, 92, 230, 0.1); padding: 6px 16px; border-radius: 20px;
+            font-size: 0.9em; font-weight: 500; color: var(--theme-color);
         }
-        .stats-badge span { font-size: 1.3em; color: #e53e3e; margin: 0 4px; }
+        .stats-badge span { font-weight: 700; font-size: 1.1em; }
 
-        /* ================= 标签页按钮区域 ================= */
-        .tabs { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        /* ================= 分段控制器 (iOS 风格 Tabs) ================= */
+        .tabs-wrapper {
+            display: flex; justify-content: center; margin-bottom: 25px;
+        }
+        .tabs {
+            display: flex; background: #e3e3e8; padding: 4px; border-radius: 12px; position: relative;
+        }
         .tab-btn {
-            background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8);
-            padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 1.1em;
-            font-weight: bold; color: #6b4e9e; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative; z-index: 1; border: none; background: transparent;
+            padding: 8px 24px; font-size: 0.95em; font-weight: 600; color: var(--text-sub);
+            cursor: pointer; transition: color 0.3s ease; border-radius: 8px;
         }
-        .tab-btn:hover, .tab-btn.active {
-            background: #8e54e9; color: white; border-color: #8e54e9;
-            transform: translateY(-2px); box-shadow: 0 5px 15px rgba(142, 84, 233, 0.3);
+        .tab-btn.active { color: var(--text-main); }
+        
+        /* 分段背景滑块 */
+        .tab-slider {
+            position: absolute; top: 4px; bottom: 4px; background: #ffffff;
+            border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 0;
         }
 
-        /* ================= 卡片高级弹性切换动画 ================= */
+        /* ================= 卡片与内容 ================= */
         .card {
-            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
-            border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(118, 75, 162, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.6); display: none;
+            background: var(--card-bg); border-radius: 20px; padding: 35px;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.02);
+            display: none; opacity: 0; transform: translateY(10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .card.active { display: block; animation: slideUpFade 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .tab-btn:active { transform: scale(0.95) !important; }
-        @keyframes slideUpFade {
-            0% { opacity: 0; transform: translateY(30px) scale(0.98); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        .card.active { display: block; opacity: 1; transform: translateY(0); }
+
+        h2 { font-size: 1.2em; font-weight: 600; margin: 0 0 20px 0; display: flex; align-items: center; gap: 8px;}
+        h2::before { content: ''; display: block; width: 4px; height: 16px; background: var(--theme-color); border-radius: 2px; }
+
+        ul { padding-left: 20px; margin: 0; }
+        li { margin-bottom: 12px; color: #424245; font-size: 0.95em; }
+        .price { font-weight: 600; color: var(--theme-color); }
+        .notice-text { font-size: 0.85em; color: var(--text-sub); margin-top: 15px; background: var(--input-bg); padding: 12px; border-radius: 8px; }
+
+        /* 隐私说明框 */
+        .privacy-notice {
+            background: #f0f0f5; border-radius: 12px; padding: 16px;
+            margin-bottom: 25px; font-size: 0.9em; color: #515154; line-height: 1.6;
         }
+        .privacy-notice strong { color: var(--text-main); }
 
-        h2 { font-size: 1.3em; color: #6b4e9e; border-bottom: 2px dashed #d8ceea; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
-        .price { color: #e53e3e; font-weight: bold; font-size: 1.1em; }
-        ul { padding-left: 24px; margin: 0; list-style-type: disc; }
-        li { margin-bottom: 10px; color: #4a5568; }
-        li::marker { color: #8e54e9; }
-        .notice-text { font-size: 0.9em; color: #888; margin-top: 10px; }
-
-        /* ================= 深度美化输入框 UI ================= */
+        /* ================= 深度美化输入框 ================= */
         .wl-panel {
-            border-radius: 16px !important; border: 1px solid #e2d8f0 !important; 
-            background: #ffffff !important; box-shadow: 0 10px 30px rgba(142, 84, 233, 0.05) !important;
-            padding: 20px !important; margin-bottom: 20px !important; transition: all 0.3s ease;
+            border-radius: 16px !important; border: none !important; 
+            background: var(--input-bg) !important; 
+            padding: 16px !important; transition: all 0.3s ease !important;
+        }
+        .wl-panel:focus-within {
+            background: #ffffff !important; box-shadow: 0 0 0 4px rgba(94, 92, 230, 0.1) !important;
         }
         .wl-header label, .wl-editor {
-            border-radius: 8px !important; border: 1px solid #ebe5f2 !important; background: #fbfbfd !important; transition: all 0.3s ease;
+            background: transparent !important; border: none !important;
+            font-size: 15px !important; padding: 8px !important;
         }
-        .wl-header input:focus, .wl-editor:focus {
-            background: #ffffff !important; border-color: #8e54e9 !important;
-            box-shadow: 0 0 0 4px rgba(142, 84, 233, 0.15) !important; outline: none !important;
-        }
-        .wl-editor { min-height: 120px !important; padding: 12px !important; font-size: 14px !important; }
-        .wl-footer { background: transparent !important; }
+        .wl-header-item:not(:last-child) { border-bottom: 1px solid #e5e5ea !important; }
+        .wl-editor { min-height: 100px !important; }
+        
         .wl-btn.primary {
-            background: linear-gradient(135deg, #9b7edb 0%, #6b4e9e 100%) !important; border: none !important;
-            border-radius: 20px !important; padding: 8px 25px !important; font-weight: 600 !important;
-            letter-spacing: 1px; box-shadow: 0 4px 15px rgba(142, 84, 233, 0.3) !important; transition: all 0.3s ease !important;
+            background: var(--theme-color) !important; border: none !important;
+            border-radius: 10px !important; padding: 8px 24px !important; 
+            font-weight: 600 !important; font-size: 0.95em !important;
+            box-shadow: none !important; transition: background 0.2s ease !important;
         }
-        .wl-btn.primary:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(142, 84, 233, 0.5) !important; }
-        .wl-header-item:not(:last-child) { border-bottom: none !important; }
+        .wl-btn.primary:hover { background: var(--theme-hover) !important; transform: none !important; }
 
-        /* ================= 隐私核心 ================= */
+        /* 隐藏历史评论 */
         .wl-card { display: none !important; }
         .wl-empty { display: none !important; }
 
-        /* ================= 后台管理按钮样式 ================= */
-        .admin-btn-container { text-align: right; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2d8f0; }
-        .admin-btn { font-size: 0.85em; color: #a893c7; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
-        .admin-btn:hover { color: #6b4e9e; background: #f3effa; }
-
-        /* ================= 排单隐私机制说明框 ================= */
-        .privacy-notice {
-            background: #f8f6fc; border-left: 4px solid #8e54e9; padding: 15px 20px;
-            border-radius: 0 12px 12px 0; margin-bottom: 25px; font-size: 0.95em;
-            color: #5a4b7c; line-height: 1.6; box-shadow: 0 2px 10px rgba(142, 84, 233, 0.03);
+        /* 管理入口按钮 */
+        .admin-btn-container { text-align: right; margin-top: 20px; }
+        .admin-btn { 
+            font-size: 0.8em; color: #aeaeb2; text-decoration: none; transition: color 0.2s; 
+            display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 6px;
         }
-        .privacy-notice strong { color: #8e54e9; }
+        .admin-btn:hover { color: var(--theme-color); background: rgba(94, 92, 230, 0.05); }
+
+        /* ================= 自定义优雅 Toast 提示 ================= */
+        #toast {
+            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); color: white;
+            padding: 12px 24px; border-radius: 30px; font-size: 0.95em; font-weight: 500;
+            transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 9999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #toast.show { top: 30px; }
+
+        @media (max-width: 600px) {
+            .card { padding: 25px 20px; }
+            .tab-btn { padding: 8px 16px; font-size: 0.85em; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>伍壹 (WuYi551) 的排单处</h1>
-        <p class="subtitle">感谢你的喜欢与支持！欢迎随时留言排单 ✨</p>
+        <h1>伍壹的排单处</h1>
+        <p class="subtitle">WuYi551 · 感谢你的喜欢与支持</p>
         <div class="stats-badge">
-            目前已收到 <span class="waline-comment-count" data-path="/"></span> 份排单
+            <span class="waline-comment-count" data-path="/">0</span> 份排单已送达
         </div>
     </div>
 
-    <div class="tabs">
-        <div class="tab-btn active" onclick="switchTab('info', this)">📋 约稿说明</div>
-        <div class="tab-btn" onclick="switchTab('gallery', this)">🎨 例图展示</div>
-        <div class="tab-btn" onclick="switchTab('board', this)">📝 填写排单</div>
+    <div class="tabs-wrapper">
+        <div class="tabs" id="tabs-container">
+            <div class="tab-slider" id="tab-slider"></div>
+            <button class="tab-btn active" onclick="switchTab(0, 'info', this)">约稿说明</button>
+            <button class="tab-btn" onclick="switchTab(1, 'gallery', this)">例图展示</button>
+            <button class="tab-btn" onclick="switchTab(2, 'board', this)">填写排单</button>
+        </div>
     </div>
 
-    <!-- 标签页 1：约稿说明 -->
+    <!-- 标签页 1 -->
     <div id="info" class="card active">
-        <h2>🎨 约稿价目表</h2>
+        <h2>约稿价目表</h2>
         <ul>
-            <li><strong>头像：</strong> <span class="price">20 / p</span></li>
-            <li><strong>立绘：</strong> <span class="price">80 / p</span></li>
-            <li><strong>壁纸类：</strong> <span class="price">240 / p</span></li>
+            <li>头像：<span class="price">20 / p</span></li>
+            <li>立绘：<span class="price">80 / p</span></li>
+            <li>壁纸类：<span class="price">240 / p</span></li>
         </ul>
-        <p class="notice-text">* 价格浮动：双人 *1.5，加急 *2，复杂视情况加价。</p>
+        <div class="notice-text">价格浮动：双人 *1.5，加急 *2，复杂视情况加价。</div>
         
-        <h2 style="margin-top: 30px;">📌 约稿须知与流程</h2>
+        <h2 style="margin-top: 30px;">须知与流程</h2>
         <ul>
-            <li><strong>工期：</strong> 无排单情况下，头像 1d，立绘 3d，壁纸 7d。</li>
-            <li><strong>流程：</strong> 头像一键出图，立绘与壁纸会先发线稿后出图。</li>
-            <li><strong>权限：</strong> 所有作品均允许不限量印制；作品可自行二改（psd +5r）；商用需与我协商，商用及买断视情况加价。</li>
+            <li>工期：无排单情况下，头像 1d，立绘 3d，壁纸 7d。</li>
+            <li>流程：头像一键出图，立绘与壁纸先发线稿后出图。</li>
+            <li>权限：所有作品均允许不限量印制；可自行二改（psd +5r）；商用及买断需协商加价。</li>
         </ul>
-        <p class="notice-text" style="color: #e53e3e;">* 拒绝：完美主义、AI。</p>
+        <div class="notice-text" style="color: #ff3b30;">拒绝：完美主义、AI。</div>
 
-        <h2 style="margin-top: 30px;">💬 其他说明</h2>
-        <p>除买断作品外，所有作品均会发布于 pixiv、x 等网站。</p>
-        <p><strong>QQ：</strong> 2319244051（其余业务也可与我私聊协商）</p>
-        <p><strong>委托群：</strong> 1108360511</p>
+        <h2 style="margin-top: 30px;">其他说明</h2>
+        <p style="font-size: 0.95em; color: #424245;">除买断作品外，所有作品均会发布于 pixiv、x 等网站。</p>
+        <p style="font-size: 0.95em; color: #424245;">QQ：2319244051（其余业务也可与我私聊协商）</p>
+        <p style="font-size: 0.95em; color: #424245;">委托群：1108360511</p>
     </div>
 
-    <!-- 标签页 2：例图展示 -->
+    <!-- 标签页 2 -->
     <div id="gallery" class="card">
-        <h2>🖼️ 例图展示</h2>
-        <p style="text-align: center; color: #888;">请上传你的图片到 GitHub，并在此处修改文件名。</p>
-        <img src="touxiang.jpg" alt="头像例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
-        <img src="litu.jpg" alt="立绘例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
-        <img src="bizhi.jpg" alt="壁纸例图" style="width: 100%; border-radius: 12px; margin-bottom: 15px;" onerror="this.style.display='none'">
+        <h2>例图展示</h2>
+        <img src="touxiang.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);" onerror="this.style.display='none'">
+        <img src="litu.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);" onerror="this.style.display='none'">
+        <img src="bizhi.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);" onerror="this.style.display='none'">
     </div>
 
-    <!-- 标签页 3：填写排单 -->
+    <!-- 标签页 3 -->
     <div id="board" class="card">
-        <h2 style="text-align: center; border: none; color: #8e54e9; margin-bottom: 5px;">📝 提交你的排单信息</h2>
-        
+        <h2>提交排单</h2>
         <div class="privacy-notice">
-            🔒 <strong>隐私与排单机制说明：</strong><br>
-            为了让您的隐私得到绝对保护，且防止同行恶意截单，本站开启了<b>“私密排单通道”</b>。您提交的排单信息以及上传的参考图，<b>其他访客完全不可见</b>，仅管理员（伍壹本人）能在后台收到。提交成功后页面会弹出提示，请放心填写！
+            🔒 <strong>私密排单通道：</strong>您的排单信息及参考图其他访客完全不可见，仅管理员能在后台收到。提交成功后页面会有提示，请放心填写。
         </div>
 
         <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
         <div id="waline"></div>
-        <script type="module">
-          import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
-          init({
-            el: '#waline',
-            serverURL: 'https://comment.wuyi.quest', 
-            meta: ['nick', 'mail', 'link'], 
-            requiredMeta: ['nick', 'mail'], 
-            comment: true, 
-            locale: {
-              placeholder: '请写下你的约稿需求（如：头像/立绘/壁纸）、QQ或微信号，点击上方图片按钮可上传参考图...',
-              success: '发送成功！' 
-            },
-            list: true,           
-            listSorting: 'newest',
-            
-            // 👇👇👇 核心：接入去不图床，突破图片限制 👇👇👇
-            imageUploader: (file) => {
-              const formData = new FormData();
-              formData.append('file', file);
-              return fetch('https://7bu.top/api/v1/upload', {
-                method: 'POST',
-                headers: {
-                  'Authorization': 'Bearer 2728|j24Nc3MOnLiqpRutPfMBlypuYAgUpFLrPHqVm2Bb'
-                },
-                body: formData
-              })
-              .then(resp => resp.json())
-              .then(res => {
-                if (res.code === 200) {
-                  return res.data.links.url;
-                } else {
-                  throw new Error('图片上传失败，请重试');
-                }
-              });
-            }
-            // 👆👆👆 图床配置结束 👆👆👆
-
-          }).then(() => {
-              setTimeout(() => {
-                  const submitBtn = document.querySelector('.wl-btn.primary');
-                  if(submitBtn){
-                      submitBtn.addEventListener('click', () => {
-                          setTimeout(() => {
-                              const editor = document.querySelector('.wl-editor');
-                              if(editor && editor.value === ''){
-                                  alert("🎉 提交成功！\n你的排单已安全送达，请耐心等待我联系你~");
-                              }
-                          }, 1000);
-                      });
-                  }
-              }, 1000);
-          });
-        </script>
-
+        
         <div class="admin-btn-container">
-            <a href="https://comment.wuyi.quest/ui" target="_blank" class="admin-btn">
-                ⚙️ 管理入口
-            </a>
+            <a href="https://comment.wuyi.quest/ui" target="_blank" class="admin-btn">⚙️ 管理入口</a>
         </div>
-
     </div>
 </div>
 
-<!-- 切换标签页的代码 -->
+<!-- 自定义 Toast 节点 -->
+<div id="toast">发送成功！烟花已为您绽放 🎆</div>
+
+<script type="module">
+  import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+  init({
+    el: '#waline',
+    serverURL: 'https://comment.wuyi.quest', 
+    meta: ['nick', 'mail', 'link'], 
+    requiredMeta: ['nick', 'mail'], 
+    comment: true, 
+    locale: {
+      placeholder: '写下你的需求（如：头像/立绘/壁纸）、QQ或微信号，可上传参考图...',
+      success: ' ' // 禁用默认提示
+    },
+    list: true,           
+    listSorting: 'newest',
+    imageUploader: (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return fetch('https://7bu.top/api/v1/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer j24Nc3MOnLiqpRutPfMBlypuYAgUpFLrPHqVm2Bb' },
+        body: formData
+      })
+      .then(resp => resp.json())
+      .then(res => {
+        if (res && res.code === 200) {
+          return res.data?.links?.url || res.data?.url || res.url;
+        }
+        throw new Error('图片上传失败');
+      });
+    }
+  }).then(() => {
+      setTimeout(() => {
+          const submitBtn = document.querySelector('.wl-btn.primary');
+          if(submitBtn){
+              submitBtn.addEventListener('click', () => {
+                  setTimeout(() => {
+                      const editor = document.querySelector('.wl-editor');
+                      // 检测输入框是否清空（代表发送成功）
+                      if(editor && editor.value === ''){
+                          showSuccessAndFireworks();
+                      }
+                  }, 1200); // 等图床和网络请求飞一会儿
+              });
+          }
+      }, 1000);
+  });
+</script>
+
 <script>
-    function switchTab(tabId, btnElement) {
+    // 烟花特效 + 优雅提示
+    function showSuccessAndFireworks() {
+        // 1. 显示顶部 Toast 提示
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 3000);
+
+        // 2. 放烟花
+        var duration = 2000;
+        var animationEnd = Date.now() + duration;
+        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+        var interval = setInterval(function() {
+            var timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) { return clearInterval(interval); }
+            var particleCount = 50 * (timeLeft / duration);
+            // 左右两边各放一束
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        }, 250);
+    }
+
+    // 高级滑块 Tabs 逻辑
+    const slider = document.getElementById('tab-slider');
+    const tabsContainer = document.getElementById('tabs-container');
+    
+    function switchTab(index, tabId, btnElement) {
         const cards = document.querySelectorAll('.card');
         const btns = document.querySelectorAll('.tab-btn');
         
+        // 切换卡片
         cards.forEach(card => { card.classList.remove('active'); });
         btns.forEach(btn => { btn.classList.remove('active'); });
         
-        const targetCard = document.getElementById(tabId);
-        void targetCard.offsetWidth;
-        
-        targetCard.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
+
+        // 滑块动画
+        const btnRect = btnElement.getBoundingClientRect();
+        const containerRect = tabsContainer.getBoundingClientRect();
+        
+        slider.style.width = `${btnRect.width}px`;
+        slider.style.transform = `translateX(${btnRect.left - containerRect.left - 4}px)`; // 减去 padding
+    }
+
+    // 初始化滑块位置
+    window.onload = () => {
+        const activeBtn = document.querySelector('.tab-btn.active');
+        if (activeBtn) {
+            const btnRect = activeBtn.getBoundingClientRect();
+            slider.style.width = `${btnRect.width}px`;
+            slider.style.transform = `translateX(0px)`;
+        }
     }
 </script>
 
