@@ -66,7 +66,7 @@
         }
         .subtitle { color: var(--text-sub); font-size: 1.05em; margin: 0 0 25px 0; letter-spacing: 2px;}
 
-        /* ================= 进度面板 (微缩科技感) ================= */
+        /* ================= 进度面板 ================= */
         .status-panel {
             display: inline-flex; gap: 30px; 
             background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -94,7 +94,6 @@
         .tab-btn:hover { color: #d1d5db; }
         .tab-btn.active { color: #fff; font-weight: 600; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         
-        /* 荧光滑动底条 */
         .tab-btn.active::after {
             content: ''; position: absolute; bottom: -2px; left: 0; width: 100%;
             height: 3px; background: var(--theme-color); border-radius: 4px;
@@ -103,7 +102,7 @@
         }
         @keyframes slideIn { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
 
-        /* ================= 卡片样式 (毛玻璃) ================= */
+        /* ================= 卡片样式 ================= */
         .card {
             background: var(--card-bg); 
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -147,7 +146,6 @@
             position: relative; overflow: hidden;
         }
         
-        /* 按钮扫光动画 */
         .btn-submit::before {
             content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
@@ -175,7 +173,6 @@
 </head>
 <body>
 
-<!-- 动态背景光晕 -->
 <div class="bg-glow">
     <div class="glow-circle glow-1"></div>
     <div class="glow-circle glow-2"></div>
@@ -198,7 +195,8 @@
             </div>
             <div class="status-item">
                 <div class="label">Delivery</div>
-                <div class="value">7 <span style="font-size:0.6em; color:#9ca3af;">天</span></div>
+                <!-- 这里把文字改成了你要求的工期 -->
+                <div class="value" style="font-size:0.9em; padding-top:4px;">3周内</div>
             </div>
         </div>
     </div>
@@ -214,16 +212,19 @@
         <h2>约稿价目表</h2>
         <ul>
             <li>头像：<span class="price">20 / p</span></li>
-            <li>立绘：<span class="price">80 / p</span></li>
+            <!-- 新增了双人和三人价格 -->
+            <li>立绘：单人 <span class="price">80</span> / 双人 <span class="price">140</span> / 三人 <span class="price">200</span></li>
             <li>壁纸类：<span class="price">240 / p</span></li>
         </ul>
         <div class="notice-box">价格浮动：双人 *1.5，加急 *2，复杂视情况加价。</div>
         
         <h2 style="margin-top: 35px;">须知与流程</h2>
         <ul>
-            <li>工期：无排单情况下，头像 1d，立绘 3d，壁纸 7d。</li>
+            <!-- 修改了稿期说明 -->
+            <li>工期：积攒够一定数量绘制，或在提交排单后 <b>三周内</b> 画出。</li>
             <li>流程：头像一键出图，立绘与壁纸先发线稿后出图。</li>
-            <li>权限：所有作品均允许不限量印制；可自行二改（psd +5r）；商用及买断需协商加价。</li>
+            <!-- 修改了PSD加价 -->
+            <li>权限：所有作品均允许不限量印制；可自行二改（psd <b>+20r</b>）；商用及买断需协商加价。</li>
         </ul>
         <div class="notice-box" style="color: #f87171; border-color: rgba(248, 113, 113, 0.2); background: rgba(248, 113, 113, 0.05);">拒绝：完美主义、AI。</div>
 
@@ -236,7 +237,6 @@
     <!-- 标签页 2 -->
     <div id="gallery" class="card">
         <h2>例图展示</h2>
-        <!-- 你的图片位置，如果还没上传图片，隐藏错误提示 -->
         <img src="touxiang.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
         <img src="litu.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
         <img src="bizhi.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
@@ -247,13 +247,14 @@
         <h2>提交排单</h2>
         <div class="privacy-notice">
             🔒 <strong>私密排单通道：</strong>点击下方按钮将跳转至安全的表单页面，您的个人信息与高清参考图仅管理员可见。<br><br>
-            为了确保能及时联系到您，<b>请务必填写有效的 QQ 或微信号</b>。提交后 24 小时内若无回复，即视为暂不接单，感谢理解！
+            为了确保能及时联系到您，<b>请务必填写有效的 QQ 或微信号</b>。
+            <!-- 修改了提交排单的提示语 -->
+            <br><span style="color: #fca5a5; margin-top: 8px; display: inline-block;">* 如果没有及时回复，可能是排单已经截止，或者我正在上学，请您耐心等待或下次再来，感谢理解！</span>
         </div>
 
         <div class="submit-area">
             <p style="color: var(--text-sub); margin-bottom: 25px; font-size: 0.95em;">支持上传高清参考图，点击跳转填写</p>
             
-            <!-- 你的腾讯文档链接，已完美嵌入霓虹按钮 -->
             <a href="https://docs.qq.com/form/page/DWU96RnJKS1JnZWVa" target="_blank" class="btn-submit">
                 📝 点击填写约稿表单
             </a>
@@ -263,17 +264,14 @@
 </div>
 
 <script>
-    // Tabs 切换逻辑，配合 CSS 的过渡动画
+    // Tabs 切换逻辑
     function switchTab(index, tabId, btnElement) {
         const cards = document.querySelectorAll('.card');
         const btns = document.querySelectorAll('.tab-btn');
         
-        // 隐藏所有卡片
         cards.forEach(card => { card.classList.remove('active'); });
-        // 移除所有按钮的激活状态
         btns.forEach(btn => { btn.classList.remove('active'); });
         
-        // 激活目标卡片和按钮
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
     }
