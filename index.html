@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
     <title>wuyi.quest | 伍壹的排单处</title>
+    <!-- 烟花特效库 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
         /* ================= 极简高级灰白设计 ================= */
@@ -14,7 +14,6 @@
             --text-main: #111111;
             --text-sub: #666666;
             --border-color: #eaeaea;
-            --theme-color: #333333;
             --input-bg: #f7f7f7;
         }
 
@@ -24,9 +23,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            margin: 0; 
-            padding: 50px 20px; 
-            line-height: 1.6;
+            margin: 0; padding: 50px 20px; line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
         
@@ -37,7 +34,6 @@
         h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.5px; margin: 0 0 12px 0; }
         .subtitle { color: var(--text-sub); font-size: 1.05em; margin: 0 0 20px 0; }
 
-        /* 排单统计 */
         .stats-badge {
             display: inline-flex; align-items: center; gap: 6px;
             background: transparent; padding: 6px 14px; border-radius: 20px;
@@ -46,7 +42,7 @@
         }
         .stats-badge span { font-weight: 600; color: var(--text-main); font-size: 1.1em; }
 
-        /* ================= 极简 Tabs 标签页 ================= */
+        /* ================= 极简 Tabs ================= */
         .tabs {
             display: flex; justify-content: center; gap: 30px; margin-bottom: 30px;
             border-bottom: 1px solid var(--border-color); padding-bottom: 0;
@@ -83,7 +79,6 @@
             background: var(--input-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);
         }
 
-        /* 隐私说明 */
         .privacy-notice {
             background: #fdfaf4; border: 1px solid #f5ebd3; border-radius: 8px; padding: 16px;
             margin-bottom: 25px; font-size: 0.9em; color: #7a5d24; line-height: 1.6;
@@ -113,12 +108,12 @@
         .wl-card { display: none !important; }
         .wl-empty { display: none !important; }
 
-        /* 管理入口按钮 */
+        /* 管理入口 */
         .admin-btn-container { text-align: right; margin-top: 25px; }
         .admin-btn { font-size: 0.8em; color: #aaa; text-decoration: none; transition: color 0.2s; display: inline-flex; align-items: center; gap: 4px; }
         .admin-btn:hover { color: var(--text-main); }
 
-        /* ================= 自定义优雅 Toast 提示 ================= */
+        /* Toast 提示 */
         #toast {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white;
@@ -151,7 +146,6 @@
         <button class="tab-btn" onclick="switchTab(2, 'board', this)">填写排单</button>
     </div>
 
-    <!-- 标签页 1 -->
     <div id="info" class="card active">
         <h2>约稿价目表</h2>
         <ul>
@@ -175,7 +169,6 @@
         <p style="font-size: 0.95em; color: #444;">委托群：1108360511</p>
     </div>
 
-    <!-- 标签页 2 -->
     <div id="gallery" class="card">
         <h2>例图展示</h2>
         <img src="touxiang.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;" onerror="this.style.display='none'">
@@ -183,11 +176,10 @@
         <img src="bizhi.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;" onerror="this.style.display='none'">
     </div>
 
-    <!-- 标签页 3 -->
     <div id="board" class="card">
         <h2>提交排单</h2>
         <div class="privacy-notice">
-            🔒 <strong>私密排单通道：</strong>您的排单信息及参考图其他访客完全不可见，仅管理员能在后台收到。提交成功后页面会有提示，请放心填写。
+            🔒 <strong>私密排单通道：</strong>您的排单信息及参考图其他访客完全不可见，仅管理员能在后台收到。由于图片直接打包在文本中，提交可能需要几秒钟，请耐心等待烟花提示。
         </div>
 
         <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
@@ -199,7 +191,6 @@
     </div>
 </div>
 
-<!-- 自定义 Toast 节点 -->
 <div id="toast">发送成功！烟花已为您绽放 🎆</div>
 
 <script type="module">
@@ -218,35 +209,27 @@
     list: true,           
     listSorting: 'newest',
     
-    // 👇👇👇 终极零配置图床：无需注册，无需 Token，直连路过图床 👇👇👇
+    // 👇👇👇 暴力 Base64 转换，直接混入文本，无视跨域 👇👇👇
     imageUploader: (file) => {
-      // 检查文件大小，路过图床免费版最大支持 10MB
-      if (file.size > 10 * 1024 * 1024) {
-        alert("图片太大了，请压缩到 10MB 以下再上传哦！");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('image', file);
-
-      // 使用免费图床接口，去掉了复杂的验证
-      return fetch('https://imgse.com/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-      .then(resp => resp.json())
-      .then(res => {
-        if (res && res.success && res.data && res.data.url) {
-          return res.data.url;
-        } else if (res && res.url) {
-          return res.url;
-        } else {
-          console.error('图床返回异常:', res);
-          throw new Error('图片上传失败');
+      return new Promise((resolve, reject) => {
+        // 限制一下，防止弄个几十MB的图把网页卡死
+        if (file.size > 5 * 1024 * 1024) {
+            alert("图片太大了，为了排单顺畅，请上传 5MB 以内的图片，或者直接加我QQ发原图~");
+            reject(new Error("File too large"));
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // 把图片转成 data:image/jpeg;base64,xxxx 格式，直接返回给 Waline
+          // Waline 会把它当成普通的图片链接插在文字里
+          resolve(e.target.result);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
       });
     }
-    // 👆👆👆 图床配置结束 👆👆👆
+    // 👆👆👆 转换结束 👆👆👆
 
   }).then(() => {
       setTimeout(() => {
@@ -258,7 +241,7 @@
                       if(editor && editor.value === ''){
                           showSuccessAndFireworks();
                       }
-                  }, 2000); // 稍微拉长等待时间，确保图传完了
+                  }, 2000); 
               });
           }
       }, 1000);
@@ -266,7 +249,7 @@
 </script>
 
 <script>
-    // 烟花特效 + 优雅提示
+    // 烟花特效
     function showSuccessAndFireworks() {
         const toast = document.getElementById('toast');
         toast.classList.add('show');
@@ -287,14 +270,11 @@
         }, 250);
     }
 
-    // Tabs 切换
     function switchTab(index, tabId, btnElement) {
         const cards = document.querySelectorAll('.card');
         const btns = document.querySelectorAll('.tab-btn');
-        
         cards.forEach(card => { card.classList.remove('active'); });
         btns.forEach(btn => { btn.classList.remove('active'); });
-        
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
     }
