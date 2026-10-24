@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 解决图床防盗链导致后台无法看图的终极神器 -->
     <meta name="referrer" content="no-referrer">
     <title>wuyi.quest | 伍壹的排单处</title>
-    <!-- 引入烟花特效库 -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
         /* ================= 极简高级灰白设计 ================= */
@@ -16,7 +14,7 @@
             --text-main: #111111;
             --text-sub: #666666;
             --border-color: #eaeaea;
-            --theme-color: #333333; /* 纯黑灰基调，高级感 */
+            --theme-color: #333333;
             --input-bg: #f7f7f7;
         }
 
@@ -39,7 +37,7 @@
         h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.5px; margin: 0 0 12px 0; }
         .subtitle { color: var(--text-sub); font-size: 1.05em; margin: 0 0 20px 0; }
 
-        /* 排单统计（极简线条） */
+        /* 排单统计 */
         .stats-badge {
             display: inline-flex; align-items: center; gap: 6px;
             background: transparent; padding: 6px 14px; border-radius: 20px;
@@ -59,7 +57,6 @@
             cursor: pointer; transition: color 0.2s; position: relative;
         }
         .tab-btn.active { color: var(--text-main); font-weight: 600; }
-        /* 底部指示线 */
         .tab-btn.active::after {
             content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
             height: 2px; background: var(--text-main); border-radius: 2px;
@@ -224,52 +221,47 @@
     comment: true, 
     locale: {
       placeholder: '写下你的需求、QQ/微信号...点击图片图标可上传参考图。',
-      success: ' ' // 禁用默认提示
+      success: ' ' 
     },
     list: true,           
     listSorting: 'newest',
-    // 万能解析：不管去不图床返回什么乱七八糟的格式，都能抠出 URL
+    
+    // 👇👇👇 终极版：接入 GitHub 仓库作为免费图床 👇👇👇
     imageUploader: (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      return fetch('https://7bu.top/api/v1/upload', {
-        method: 'POST',
-        headers: { 
-            'Authorization': 'Bearer j24Nc3MOnLiqpRutPfMBlypuYAgUpFLrPHqVm2Bb'
-        },
-        body: formData
-      })
-      .then(resp => resp.json())
-      .then(res => {
-        let finalUrl = '';
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      }).then(async (base64) => {
+        // 用时间戳命名文件，防止重名覆盖
+        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
+        const url = `https://api.github.com/repos/ABC1232123/wuyi-images/contents/${fileName}`;
         
-        // 极宽泛的格式匹配
-        if (res) {
-            if (typeof res === 'string' && res.startsWith('http')) {
-                finalUrl = res;
-            } else if (res.code === 200 || res.status === true || res.success) {
-                // 尝试从常见的嵌套结构中提取
-                finalUrl = res.data?.links?.url || res.data?.url || res.data?.path || res.url || res.path;
-            } else if (res.data && typeof res.data === 'string' && res.data.startsWith('http')) {
-                finalUrl = res.data;
-            }
-        }
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer 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`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            message: `Upload image: ${fileName}`,
+            content: base64,
+          }),
+        });
 
-        // 如果还是找不到，但不报错的话，直接丢掉可能出现的相对路径问题
-        if (finalUrl) {
-            // 确保返回的是完整的 https 链接
-            if (!finalUrl.startsWith('http')) {
-                finalUrl = 'https://7bu.top' + (finalUrl.startsWith('/') ? '' : '/') + finalUrl;
-            }
-            return finalUrl;
-        } else {
-            // 如果解析确实失败，但图片已经传上去了，为了不打断用户，强行给它个空字符串或者提示
-            console.warn("图床返回异常，但可能已上传:", res);
-            throw new Error('图片解析失败');
+        if (!response.ok) {
+          const error = await response.json();
+          console.error('GitHub 上传失败:', error);
+          throw new Error('图片上传失败');
         }
+        
+        const data = await response.json();
+        return data.content.download_url; 
       });
     }
+    // 👆👆👆 图床配置结束 👆👆👆
+
   }).then(() => {
       setTimeout(() => {
           const submitBtn = document.querySelector('.wl-btn.primary');
@@ -277,11 +269,10 @@
               submitBtn.addEventListener('click', () => {
                   setTimeout(() => {
                       const editor = document.querySelector('.wl-editor');
-                      // 如果编辑器被清空，说明发送成功
                       if(editor && editor.value === ''){
                           showSuccessAndFireworks();
                       }
-                  }, 1200);
+                  }, 1500); // 留足上传时间
               });
           }
       }, 1000);
