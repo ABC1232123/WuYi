@@ -4,139 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wuyi.quest | 伍壹的排单处</title>
-    <!-- 烟花特效库 -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
-        /* ================= 极简高级灰白设计 ================= */
+        /* ================= 暗夜模式核心变量 ================= */
         :root {
-            --bg-color: #fafafa;
-            --card-bg: #ffffff;
-            --text-main: #111111;
-            --text-sub: #666666;
-            --border-color: #eaeaea;
-            --input-bg: #f7f7f7;
+            --bg-base: #050505;
+            --card-bg: rgba(20, 20, 25, 0.65);
+            --text-main: #f8f9fa;
+            --text-sub: #9ca3af;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --theme-color: #8b5cf6; /* 赛博紫 */
+            --theme-glow: rgba(139, 92, 246, 0.3);
+            --input-bg: rgba(0, 0, 0, 0.4);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-base);
             color: var(--text-main);
-            margin: 0; padding: 50px 20px; line-height: 1.6;
+            margin: 0; 
+            padding: 50px 20px; 
+            line-height: 1.6;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
         }
-        
-        .container { max-width: 720px; margin: 0 auto; }
+
+        /* ================= 动态星云光晕背景 ================= */
+        .bg-glow {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            overflow: hidden; pointer-events: none;
+        }
+        .glow-circle {
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4;
+        }
+        .glow-1 {
+            width: 400px; height: 400px; background: #8b5cf6;
+            top: -100px; left: -100px; animation: float 15s infinite alternate ease-in-out;
+        }
+        .glow-2 {
+            width: 300px; height: 300px; background: #06b6d4;
+            bottom: -50px; right: -50px; animation: float 18s infinite alternate-reverse ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 100px) scale(1.2); }
+        }
+
+        .container { max-width: 720px; margin: 0 auto; position: relative; z-index: 1; }
 
         /* ================= 顶部标题 ================= */
         .header { text-align: center; margin-bottom: 40px; }
-        h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.5px; margin: 0 0 12px 0; }
-        .subtitle { color: var(--text-sub); font-size: 1.05em; margin: 0 0 20px 0; }
-
-        .stats-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: transparent; padding: 6px 14px; border-radius: 20px;
-            font-size: 0.85em; font-weight: 500; color: var(--text-sub);
-            border: 1px solid var(--border-color);
+        h1 { 
+            font-size: 2.4em; font-weight: 700; letter-spacing: 1px; margin: 0 0 10px 0; 
+            background: linear-gradient(90deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .stats-badge span { font-weight: 600; color: var(--text-main); font-size: 1.1em; }
+        .subtitle { color: var(--text-sub); font-size: 1.05em; margin: 0 0 25px 0; letter-spacing: 2px;}
+
+        /* ================= 进度面板 (微缩科技感) ================= */
+        .status-panel {
+            display: inline-flex; gap: 30px; 
+            background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 30px; border-radius: 16px; border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .status-item { text-align: center; position: relative;}
+        .status-item:not(:last-child)::after {
+            content: ''; position: absolute; right: -15px; top: 20%; height: 60%; width: 1px; background: var(--border-color);
+        }
+        .status-item .label { font-size: 0.8em; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px;}
+        .status-item .value { font-weight: 700; color: #fff; font-size: 1.2em; margin-top: 4px; }
+        .status-item .value.green { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
 
         /* ================= 极简 Tabs ================= */
         .tabs {
-            display: flex; justify-content: center; gap: 30px; margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color); padding-bottom: 0;
+            display: flex; justify-content: center; gap: 40px; margin-bottom: 30px;
+            position: relative;
         }
         .tab-btn {
             border: none; background: transparent; padding: 10px 0;
-            font-size: 1em; font-weight: 500; color: var(--text-sub);
-            cursor: pointer; transition: color 0.2s; position: relative;
+            font-size: 1.05em; font-weight: 500; color: var(--text-sub);
+            cursor: pointer; transition: color 0.3s; position: relative;
         }
-        .tab-btn.active { color: var(--text-main); font-weight: 600; }
+        .tab-btn:hover { color: #d1d5db; }
+        .tab-btn.active { color: #fff; font-weight: 600; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        
+        /* 荧光滑动底条 */
         .tab-btn.active::after {
-            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%;
-            height: 2px; background: var(--text-main); border-radius: 2px;
-            animation: slideIn 0.3s ease;
+            content: ''; position: absolute; bottom: -2px; left: 0; width: 100%;
+            height: 3px; background: var(--theme-color); border-radius: 4px;
+            box-shadow: 0 0 12px var(--theme-color);
+            animation: slideIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        @keyframes slideIn { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        @keyframes slideIn { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
 
-        /* ================= 卡片样式 ================= */
+        /* ================= 卡片样式 (毛玻璃) ================= */
         .card {
-            background: var(--card-bg); border-radius: 12px; padding: 35px;
+            background: var(--card-bg); 
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px; padding: 40px;
             border: 1px solid var(--border-color);
-            display: none; opacity: 0; transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            display: none; opacity: 0; transform: translateY(15px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
         .card.active { display: block; opacity: 1; transform: translateY(0); }
 
-        h2 { font-size: 1.15em; font-weight: 600; margin: 0 0 20px 0; color: var(--text-main); }
+        h2 { font-size: 1.2em; font-weight: 600; margin: 0 0 25px 0; color: #fff; display: flex; align-items: center; gap: 10px;}
+        h2::before { content: ''; display: block; width: 4px; height: 18px; background: var(--theme-color); border-radius: 2px; box-shadow: 0 0 10px var(--theme-color);}
+        
         ul { padding-left: 20px; margin: 0; }
-        li { margin-bottom: 12px; color: #444; font-size: 0.95em; }
-        .price { font-weight: 600; color: var(--text-main); }
+        li { margin-bottom: 14px; color: #d1d5db; font-size: 0.95em; }
+        .price { font-weight: 700; color: #fff; font-family: monospace; font-size: 1.1em;}
         
         .notice-box { 
-            font-size: 0.85em; color: var(--text-sub); margin-top: 15px; 
-            background: var(--input-bg); padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);
+            font-size: 0.85em; color: var(--text-sub); margin-top: 20px; 
+            background: var(--input-bg); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color);
         }
 
         .privacy-notice {
-            background: #fdfaf4; border: 1px solid #f5ebd3; border-radius: 8px; padding: 16px;
-            margin-bottom: 25px; font-size: 0.9em; color: #7a5d24; line-height: 1.6;
+            background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 20px;
+            margin-bottom: 30px; font-size: 0.9em; color: #c4b5fd; line-height: 1.7;
+            box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.05);
         }
-        .privacy-notice strong { color: #5c4310; }
+        .privacy-notice strong { color: #fff; }
 
-        /* ================= 深度美化输入框 ================= */
-        .wl-panel {
-            border-radius: 10px !important; border: 1px solid var(--border-color) !important; 
-            background: var(--input-bg) !important; 
-            padding: 16px !important; transition: all 0.3s ease !important;
+        /* ================= 霓虹按钮区 ================= */
+        .submit-area { text-align: center; padding: 40px 0 20px; }
+        .btn-submit {
+            display: inline-block; 
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: #fff;
+            padding: 18px 50px; border-radius: 30px; text-decoration: none;
+            font-size: 1.1em; font-weight: 600; letter-spacing: 1px;
+            box-shadow: 0 10px 30px var(--theme-glow), inset 0 1px 1px rgba(255,255,255,0.4);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative; overflow: hidden;
         }
-        .wl-panel:focus-within { background: #ffffff !important; border-color: #ccc !important; }
-        .wl-header label, .wl-editor { background: transparent !important; border: none !important; font-size: 15px !important; padding: 8px !important; color: var(--text-main) !important; }
-        .wl-header-item:not(:last-child) { border-bottom: 1px solid var(--border-color) !important; }
-        .wl-editor { min-height: 100px !important; }
         
-        .wl-btn.primary {
-            background: var(--text-main) !important; border: none !important;
-            border-radius: 8px !important; padding: 8px 24px !important; 
-            font-weight: 500 !important; font-size: 0.95em !important;
-            transition: opacity 0.2s ease !important;
+        /* 按钮扫光动画 */
+        .btn-submit::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
         }
-        .wl-btn.primary:hover { opacity: 0.8 !important; }
-
-        /* 隐藏历史评论 */
-        .wl-card { display: none !important; }
-        .wl-empty { display: none !important; }
-
-        /* 管理入口 */
-        .admin-btn-container { text-align: right; margin-top: 25px; }
-        .admin-btn { font-size: 0.8em; color: #aaa; text-decoration: none; transition: color 0.2s; display: inline-flex; align-items: center; gap: 4px; }
-        .admin-btn:hover { color: var(--text-main); }
-
-        /* Toast 提示 */
-        #toast {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); color: white;
-            padding: 12px 24px; border-radius: 30px; font-size: 0.95em; font-weight: 500;
-            transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 9999;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        
+        .btn-submit:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 15px 40px var(--theme-glow), inset 0 1px 1px rgba(255,255,255,0.5);
         }
-        #toast.show { top: 30px; }
+        .btn-submit:hover::before { left: 100%; }
+        .btn-submit:active { transform: translateY(1px) scale(0.98); }
 
+        /* ================= 手机端适配 ================= */
         @media (max-width: 600px) {
+            body { padding: 30px 15px; }
+            h1 { font-size: 2em; }
+            .status-panel { flex-wrap: wrap; gap: 15px; padding: 15px; justify-content: center;}
+            .status-item:not(:last-child)::after { display: none; }
+            .tabs { gap: 20px; }
             .card { padding: 25px 20px; }
-            .tabs { gap: 15px; }
+            .btn-submit { padding: 16px 30px; width: 100%; font-size: 1em; }
         }
     </style>
 </head>
 <body>
 
+<!-- 动态背景光晕 -->
+<div class="bg-glow">
+    <div class="glow-circle glow-1"></div>
+    <div class="glow-circle glow-2"></div>
+</div>
+
 <div class="container">
     <div class="header">
         <h1>伍壹的排单处</h1>
-        <p class="subtitle">WuYi551 · 感谢你的喜欢与支持</p>
-        <div class="stats-badge">
-            <span class="waline-comment-count" data-path="/">0</span> 份排单已送达
+        <p class="subtitle">WuYi551 · Thank you for your support</p>
+        
+        <!-- 进度面板 -->
+        <div class="status-panel">
+            <div class="status-item">
+                <div class="label">Status</div>
+                <div class="value green">接单中</div>
+            </div>
+            <div class="status-item">
+                <div class="label">Queue</div>
+                <div class="value">3 <span style="font-size:0.6em; color:#9ca3af;">人</span></div>
+            </div>
+            <div class="status-item">
+                <div class="label">Delivery</div>
+                <div class="value">7 <span style="font-size:0.6em; color:#9ca3af;">天</span></div>
+            </div>
         </div>
     </div>
 
@@ -146,6 +209,7 @@
         <button class="tab-btn" onclick="switchTab(2, 'board', this)">填写排单</button>
     </div>
 
+    <!-- 标签页 1 -->
     <div id="info" class="card active">
         <h2>约稿价目表</h2>
         <ul>
@@ -155,126 +219,61 @@
         </ul>
         <div class="notice-box">价格浮动：双人 *1.5，加急 *2，复杂视情况加价。</div>
         
-        <h2 style="margin-top: 30px;">须知与流程</h2>
+        <h2 style="margin-top: 35px;">须知与流程</h2>
         <ul>
             <li>工期：无排单情况下，头像 1d，立绘 3d，壁纸 7d。</li>
             <li>流程：头像一键出图，立绘与壁纸先发线稿后出图。</li>
             <li>权限：所有作品均允许不限量印制；可自行二改（psd +5r）；商用及买断需协商加价。</li>
         </ul>
-        <div class="notice-box" style="color: #d93025;">拒绝：完美主义、AI。</div>
+        <div class="notice-box" style="color: #f87171; border-color: rgba(248, 113, 113, 0.2); background: rgba(248, 113, 113, 0.05);">拒绝：完美主义、AI。</div>
 
-        <h2 style="margin-top: 30px;">其他说明</h2>
-        <p style="font-size: 0.95em; color: #444;">除买断作品外，所有作品均会发布于 pixiv、x 等网站。</p>
-        <p style="font-size: 0.95em; color: #444;">QQ：2319244051（其余业务也可与我私聊协商）</p>
-        <p style="font-size: 0.95em; color: #444;">委托群：1108360511</p>
+        <h2 style="margin-top: 35px;">其他说明</h2>
+        <p style="font-size: 0.95em; color: #d1d5db;">除买断作品外，所有作品均会发布于 pixiv、x 等网站。</p>
+        <p style="font-size: 0.95em; color: #d1d5db;">QQ：2319244051（其余业务也可与我私聊协商）</p>
+        <p style="font-size: 0.95em; color: #d1d5db;">委托群：1108360511</p>
     </div>
 
+    <!-- 标签页 2 -->
     <div id="gallery" class="card">
         <h2>例图展示</h2>
-        <img src="touxiang.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;" onerror="this.style.display='none'">
-        <img src="litu.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;" onerror="this.style.display='none'">
-        <img src="bizhi.jpg" style="width: 100%; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee;" onerror="this.style.display='none'">
+        <!-- 你的图片位置，如果还没上传图片，隐藏错误提示 -->
+        <img src="touxiang.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
+        <img src="litu.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
+        <img src="bizhi.jpg" style="width: 100%; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onerror="this.style.display='none'">
     </div>
 
+    <!-- 标签页 3：提交排单 -->
     <div id="board" class="card">
         <h2>提交排单</h2>
         <div class="privacy-notice">
-            🔒 <strong>私密排单通道：</strong>您的排单信息及参考图其他访客完全不可见，仅管理员能在后台收到。由于图片直接打包在文本中，提交可能需要几秒钟，请耐心等待烟花提示。
+            🔒 <strong>私密排单通道：</strong>点击下方按钮将跳转至安全的表单页面，您的个人信息与高清参考图仅管理员可见。<br><br>
+            为了确保能及时联系到您，<b>请务必填写有效的 QQ 或微信号</b>。提交后 24 小时内若无回复，即视为暂不接单，感谢理解！
         </div>
 
-        <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
-        <div id="waline"></div>
-        
-        <div class="admin-btn-container">
-            <a href="https://comment.wuyi.quest/ui" target="_blank" class="admin-btn">⚙️ 管理入口</a>
+        <div class="submit-area">
+            <p style="color: var(--text-sub); margin-bottom: 25px; font-size: 0.95em;">支持上传高清参考图，点击跳转填写</p>
+            
+            <!-- 你的腾讯文档链接，已完美嵌入霓虹按钮 -->
+            <a href="https://docs.qq.com/form/page/DWU96RnJKS1JnZWVa" target="_blank" class="btn-submit">
+                📝 点击填写约稿表单
+            </a>
+            
         </div>
     </div>
 </div>
 
-<div id="toast">发送成功！烟花已为您绽放 🎆</div>
-
-<script type="module">
-  import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
-  
-  init({
-    el: '#waline',
-    serverURL: 'https://comment.wuyi.quest', 
-    meta: ['nick', 'mail', 'link'], 
-    requiredMeta: ['nick', 'mail'], 
-    comment: true, 
-    locale: {
-      placeholder: '写下你的需求、QQ/微信号...点击图片图标可上传参考图。',
-      success: ' ' 
-    },
-    list: true,           
-    listSorting: 'newest',
-    
-    // 👇👇👇 暴力 Base64 转换，直接混入文本，无视跨域 👇👇👇
-    imageUploader: (file) => {
-      return new Promise((resolve, reject) => {
-        // 限制一下，防止弄个几十MB的图把网页卡死
-        if (file.size > 5 * 1024 * 1024) {
-            alert("图片太大了，为了排单顺畅，请上传 5MB 以内的图片，或者直接加我QQ发原图~");
-            reject(new Error("File too large"));
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          // 把图片转成 data:image/jpeg;base64,xxxx 格式，直接返回给 Waline
-          // Waline 会把它当成普通的图片链接插在文字里
-          resolve(e.target.result);
-        };
-        reader.onerror = (error) => reject(error);
-        reader.readAsDataURL(file);
-      });
-    }
-    // 👆👆👆 转换结束 👆👆👆
-
-  }).then(() => {
-      setTimeout(() => {
-          const submitBtn = document.querySelector('.wl-btn.primary');
-          if(submitBtn){
-              submitBtn.addEventListener('click', () => {
-                  setTimeout(() => {
-                      const editor = document.querySelector('.wl-editor');
-                      if(editor && editor.value === ''){
-                          showSuccessAndFireworks();
-                      }
-                  }, 2000); 
-              });
-          }
-      }, 1000);
-  });
-</script>
-
 <script>
-    // 烟花特效
-    function showSuccessAndFireworks() {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 3000);
-
-        var duration = 2000;
-        var animationEnd = Date.now() + duration;
-        var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
-        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-
-        var interval = setInterval(function() {
-            var timeLeft = animationEnd - Date.now();
-            if (timeLeft <= 0) { return clearInterval(interval); }
-            var particleCount = 50 * (timeLeft / duration);
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-            confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-        }, 250);
-    }
-
+    // Tabs 切换逻辑，配合 CSS 的过渡动画
     function switchTab(index, tabId, btnElement) {
         const cards = document.querySelectorAll('.card');
         const btns = document.querySelectorAll('.tab-btn');
+        
+        // 隐藏所有卡片
         cards.forEach(card => { card.classList.remove('active'); });
+        // 移除所有按钮的激活状态
         btns.forEach(btn => { btn.classList.remove('active'); });
+        
+        // 激活目标卡片和按钮
         document.getElementById(tabId).classList.add('active');
         btnElement.classList.add('active');
     }
