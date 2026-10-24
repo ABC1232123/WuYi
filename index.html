@@ -96,13 +96,8 @@
             background: var(--input-bg) !important; 
             padding: 16px !important; transition: all 0.3s ease !important;
         }
-        .wl-panel:focus-within {
-            background: #ffffff !important; border-color: #ccc !important;
-        }
-        .wl-header label, .wl-editor {
-            background: transparent !important; border: none !important;
-            font-size: 15px !important; padding: 8px !important; color: var(--text-main) !important;
-        }
+        .wl-panel:focus-within { background: #ffffff !important; border-color: #ccc !important; }
+        .wl-header label, .wl-editor { background: transparent !important; border: none !important; font-size: 15px !important; padding: 8px !important; color: var(--text-main) !important; }
         .wl-header-item:not(:last-child) { border-bottom: 1px solid var(--border-color) !important; }
         .wl-editor { min-height: 100px !important; }
         
@@ -120,10 +115,7 @@
 
         /* 管理入口按钮 */
         .admin-btn-container { text-align: right; margin-top: 25px; }
-        .admin-btn { 
-            font-size: 0.8em; color: #aaa; text-decoration: none; transition: color 0.2s; 
-            display: inline-flex; align-items: center; gap: 4px;
-        }
+        .admin-btn { font-size: 0.8em; color: #aaa; text-decoration: none; transition: color 0.2s; display: inline-flex; align-items: center; gap: 4px; }
         .admin-btn:hover { color: var(--text-main); }
 
         /* ================= 自定义优雅 Toast 提示 ================= */
@@ -226,38 +218,32 @@
     list: true,           
     listSorting: 'newest',
     
-    // 👇👇👇 终极版：接入 GitHub 仓库作为免费图床 👇👇👇
+    // 👇👇👇 终极零配置图床：无需注册，无需 Token，直连路过图床 👇👇👇
     imageUploader: (file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-        reader.readAsDataURL(file);
-      }).then(async (base64) => {
-        // 用时间戳命名文件，防止重名覆盖
-        const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '')}`;
-        const url = `https://api.github.com/repos/ABC1232123/wuyi-images/contents/${fileName}`;
-        
-        const response = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer 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`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/vnd.github.v3+json'
-          },
-          body: JSON.stringify({
-            message: `Upload image: ${fileName}`,
-            content: base64,
-          }),
-        });
+      // 检查文件大小，路过图床免费版最大支持 10MB
+      if (file.size > 10 * 1024 * 1024) {
+        alert("图片太大了，请压缩到 10MB 以下再上传哦！");
+        return;
+      }
 
-        if (!response.ok) {
-          const error = await response.json();
-          console.error('GitHub 上传失败:', error);
+      const formData = new FormData();
+      formData.append('image', file);
+
+      // 使用免费图床接口，去掉了复杂的验证
+      return fetch('https://imgse.com/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(resp => resp.json())
+      .then(res => {
+        if (res && res.success && res.data && res.data.url) {
+          return res.data.url;
+        } else if (res && res.url) {
+          return res.url;
+        } else {
+          console.error('图床返回异常:', res);
           throw new Error('图片上传失败');
         }
-        
-        const data = await response.json();
-        return data.content.download_url; 
       });
     }
     // 👆👆👆 图床配置结束 👆👆👆
@@ -272,7 +258,7 @@
                       if(editor && editor.value === ''){
                           showSuccessAndFireworks();
                       }
-                  }, 1500); // 留足上传时间
+                  }, 2000); // 稍微拉长等待时间，确保图传完了
               });
           }
       }, 1000);
