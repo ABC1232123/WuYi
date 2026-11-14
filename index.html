@@ -84,9 +84,8 @@
         li { margin-bottom: 12px; color: #a1a1a6; font-size: 0.95em; }
         .price { font-weight: 700; color: #fff; font-family: monospace; font-size: 1.1em;}
         
-        /* 涨价公告框 */
         .winter-notice {
-            display: none; /* 默认隐藏，到了时间自动显示 */
+            display: none;
             background: rgba(239, 68, 68, 0.15); 
             border: 1px solid rgba(239, 68, 68, 0.3); 
             color: #fca5a5; 
@@ -192,7 +191,7 @@
         <div class="card">
             <h2>约稿说明</h2>
 
-            <!-- 冬季涨价公告 -->
+            <!-- 冬季涨价公告（页面内显示） -->
             <div id="winterNotice" class="winter-notice">
                 ❄️ 冬季加价公告：11月16日0时起，因天气转凉，绘画冻手，所有价格均乘以 1.5。
             </div>
@@ -203,7 +202,6 @@
                 <div class="status-item"><div class="label">Delivery</div><div class="value" style="font-size: 0.9em; padding-top: 4px;">3周内</div></div>
             </div>
 
-            <!-- 价目表（带 id 方便 JS 动态修改） -->
             <ul id="priceList">
                 <li>头像：<span class="price" id="p-avatar">20</span> / p</li>
                 <li>立绘：单人 <span class="price" id="p-single">80</span> / 双人 <span class="price" id="p-double">140</span> / 三人 <span class="price" id="p-triple">200</span></li>
@@ -221,7 +219,6 @@
                 🔒 <b>排单提示：</b>如果没有及时回复，可能是排单已经截止，或者我正在上学。
             </div>
 
-            <!-- 触发弹窗的按钮 -->
             <button class="btn-submit" onclick="openConfirmModal()">📝 点击填写约稿表单</button>
         </div>
     </div>
@@ -276,12 +273,9 @@
     <div class="modal-card">
         <h3>📋 确认一下，再填写表单~</h3>
         <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; font-size: 0.9em; margin-bottom: 20px;">
-            
-            <!-- 弹窗内的涨价提示 -->
             <p id="modalWinterNotice" style="display:none; color: #fca5a5; font-weight: bold; margin-bottom: 8px;">
                 ❄️ 天气转凉，绘画冻手，现所有价格 ×1.5
             </p>
-
             <p style="margin-bottom: 8px; color: #fff;"><b>价目参考：</b>头像 <span id="m-avatar">20</span> / 立绘单人 <span id="m-single">80</span>·双人 <span id="m-double">140</span>·三人 <span id="m-triple">200</span> / 壁纸 <span id="m-wallpaper">240</span></p>
             <p style="margin-bottom: 8px; color: #fff;"><b>工期与规则：</b>排单后 3 周内出图；可自行二改（PSD +20r）；<span style="color: #fca5a5;">商用×2，买断×3</span></p>
             <p style="margin-bottom: 0; color: #fca5a5;"><b>拒绝项：</b>完美主义、AI</p>
@@ -290,6 +284,17 @@
             <button onclick="closeConfirmModal()" style="flex: 1; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; border: none; cursor: pointer; font-size: 0.95em;">再想想</button>
             <a href="https://docs.qq.com/form/page/DWU96RnJKS1JnZWVa" target="_blank" style="flex: 1; padding: 12px; border-radius: 10px; background: #fff; color: #000; text-align: center; text-decoration: none; font-weight: 600; border: none; cursor: pointer; font-size: 0.95em;">已了解，去填表 ➔</a>
         </div>
+    </div>
+</div>
+
+<!-- 专门在进约稿页面时弹出的涨价通知弹窗 -->
+<div id="priceIncreaseModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="text-align: center;">
+        <h3>❄️ 冬季加价通知</h3>
+        <p style="color: #fca5a5; font-size: 1.05em; font-weight: bold; margin: 20px 0;">
+            11月16日0时起，因天气转凉，绘画冻手，所有价格均乘以 1.5。
+        </p>
+        <button onclick="closePriceIncreaseModal()" class="btn-submit" style="margin-top: 10px; background: #8b5cf6; color: #fff;">我知道了</button>
     </div>
 </div>
 
@@ -315,56 +320,51 @@
 <script>
     // ================= 核心功能：动态检测时间并涨价 =================
     function checkWinterPrice() {
-        // 设定涨价生效时间为 11月16日 0时
         const now = new Date();
         const targetDate = new Date(now.getFullYear(), 10, 16); // 10代表11月，16代表日期
         
-        // 如果当前时间大于等于11月16日 0点
         if (now >= targetDate) {
-            // 1. 显示页面顶部的公告
             document.getElementById('winterNotice').style.display = 'block';
-            
-            // 2. 显示弹窗里的红字公告
             document.getElementById('modalWinterNotice').style.display = 'block';
 
-            // 3. 计算并更新页面上的价格 (原价 * 1.5)
-            const prices = {
-                'p-avatar': 20,
-                'p-single': 80,
-                'p-double': 140,
-                'p-triple': 200,
-                'p-wallpaper': 240
-            };
-            
-            for (let id in prices) {
-                let newPrice = prices[id] * 1.5;
-                document.getElementById(id).innerText = newPrice;
-            }
+            const prices = { 'p-avatar': 20, 'p-single': 80, 'p-double': 140, 'p-triple': 200, 'p-wallpaper': 240 };
+            for (let id in prices) document.getElementById(id).innerText = prices[id] * 1.5;
 
-            // 4. 同步更新弹窗里的价格
-            const modalPrices = {
-                'm-avatar': 20,
-                'm-single': 80,
-                'm-double': 140,
-                'm-triple': 200,
-                'm-wallpaper': 240
-            };
-            for (let id in modalPrices) {
-                let newPrice = modalPrices[id] * 1.5;
-                document.getElementById(id).innerText = newPrice;
-            }
+            const modalPrices = { 'm-avatar': 20, 'm-single': 80, 'm-double': 140, 'm-triple': 200, 'm-wallpaper': 240 };
+            for (let id in modalPrices) document.getElementById(id).innerText = modalPrices[id] * 1.5;
         }
     }
-
-    // 页面加载时立刻执行检查
     checkWinterPrice();
 
-    // ================= 页面切换 =================
+    // ================= 页面切换与专属弹窗触发 =================
     function switchPage(pageId, btnElement) {
         document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
         btnElement.classList.add('active');
+
+        // 如果点击的是“约稿”，检查时间并弹窗
+        if (pageId === 'commission') {
+            checkPriceIncreaseNotice();
+        }
+    }
+
+    // 检查是否弹出涨价通知
+    function checkPriceIncreaseNotice() {
+        const now = new Date();
+        const targetDate = new Date(now.getFullYear(), 10, 16); 
+        
+        // 时间到了，且用户本次浏览还没关过这个弹窗
+        if (now >= targetDate && !sessionStorage.getItem('priceNoticeClosed')) {
+            document.getElementById('priceIncreaseModal').style.display = 'flex';
+        }
+    }
+
+    // 关闭涨价通知弹窗
+    function closePriceIncreaseModal() {
+        document.getElementById('priceIncreaseModal').style.display = 'none';
+        // 记录一下，当前会话不再弹（用户刷新网页会重新弹）
+        sessionStorage.setItem('priceNoticeClosed', 'true');
     }
 
     // ================= 画廊分类切换 =================
@@ -419,7 +419,7 @@
         });
     }
 
-    // ================= 弹窗控制 =================
+    // ================= 表单前弹窗控制 =================
     function openConfirmModal() {
         document.getElementById('confirmModal').style.display = 'flex';
     }
@@ -443,7 +443,6 @@
         isPlaying = !isPlaying;
     }
 
-    // 解除浏览器自动播放限制
     document.body.addEventListener('click', function unlockAudio() {
         if (!isPlaying) {
             bgMusic.play().then(() => {
