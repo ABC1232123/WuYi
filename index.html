@@ -84,6 +84,19 @@
         li { margin-bottom: 12px; color: #a1a1a6; font-size: 0.95em; }
         .price { font-weight: 700; color: #fff; font-family: monospace; font-size: 1.1em;}
         
+        /* 涨价公告框 */
+        .winter-notice {
+            display: none; /* 默认隐藏，到了时间自动显示 */
+            background: rgba(239, 68, 68, 0.15); 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+            color: #fca5a5; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            font-size: 0.95em;
+            text-align: center;
+        }
+
         .btn-submit { display: block; width: 100%; text-align: center; background: #fff; color: #000; padding: 16px 0; border-radius: 12px; text-decoration: none; font-size: 1.05em; font-weight: 600; transition: all 0.3s; margin-top: 20px; border: none; cursor: pointer;}
         .btn-submit:hover { background: #e5e5ea; transform: translateY(-2px); }
 
@@ -178,16 +191,23 @@
     <div id="page-commission" class="page-section">
         <div class="card">
             <h2>约稿说明</h2>
+
+            <!-- 冬季涨价公告 -->
+            <div id="winterNotice" class="winter-notice">
+                ❄️ 冬季加价公告：11月16日0时起，因天气转凉，绘画冻手，所有价格均乘以 1.5。
+            </div>
+
             <div class="status-panel">
                 <div class="status-item"><div class="label">Status</div><div class="value green">接单中</div></div>
                 <div class="status-item"><div class="label">Queue</div><div class="value">16 人</div></div>
                 <div class="status-item"><div class="label">Delivery</div><div class="value" style="font-size: 0.9em; padding-top: 4px;">3周内</div></div>
             </div>
 
-            <ul>
-                <li>头像：<span class="price">20 / p</span></li>
-                <li>立绘：单人 <span class="price">80</span> / 双人 <span class="price">140</span> / 三人 <span class="price">200</span></li>
-                <li>壁纸类：<span class="price">240 / p</span></li>
+            <!-- 价目表（带 id 方便 JS 动态修改） -->
+            <ul id="priceList">
+                <li>头像：<span class="price" id="p-avatar">20</span> / p</li>
+                <li>立绘：单人 <span class="price" id="p-single">80</span> / 双人 <span class="price" id="p-double">140</span> / 三人 <span class="price" id="p-triple">200</span></li>
+                <li>壁纸类：<span class="price" id="p-wallpaper">240</span> / p</li>
             </ul>
             
             <h2 style="margin-top: 30px; font-size: 1.1em;">须知</h2>
@@ -251,12 +271,18 @@
     </div>
 </div>
 
-<!-- 点击弹出的表单前注意事项预览弹窗 -->
+<!-- 表单前注意事项预览弹窗 -->
 <div id="confirmModal" class="modal-overlay" style="display: none;">
     <div class="modal-card">
         <h3>📋 确认一下，再填写表单~</h3>
         <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; font-size: 0.9em; margin-bottom: 20px;">
-            <p style="margin-bottom: 8px; color: #fff;"><b>价目参考：</b>头像 20 / 立绘单人 80·双人 140·三人 200 / 壁纸 240</p>
+            
+            <!-- 弹窗内的涨价提示 -->
+            <p id="modalWinterNotice" style="display:none; color: #fca5a5; font-weight: bold; margin-bottom: 8px;">
+                ❄️ 天气转凉，绘画冻手，现所有价格 ×1.5
+            </p>
+
+            <p style="margin-bottom: 8px; color: #fff;"><b>价目参考：</b>头像 <span id="m-avatar">20</span> / 立绘单人 <span id="m-single">80</span>·双人 <span id="m-double">140</span>·三人 <span id="m-triple">200</span> / 壁纸 <span id="m-wallpaper">240</span></p>
             <p style="margin-bottom: 8px; color: #fff;"><b>工期与规则：</b>排单后 3 周内出图；可自行二改（PSD +20r）；<span style="color: #fca5a5;">商用×2，买断×3</span></p>
             <p style="margin-bottom: 0; color: #fca5a5;"><b>拒绝项：</b>完美主义、AI</p>
         </div>
@@ -274,7 +300,6 @@
         <div class="title">YOASOBI - 安可</div>
         <div class="artist">BGM</div>
     </div>
-    <!-- 这里直接读取你 GitHub 仓库里的 encore.mp3 -->
     <audio id="bgMusic" src="encore.mp3" loop></audio>
 </div>
 
@@ -288,6 +313,52 @@
 </div>
 
 <script>
+    // ================= 核心功能：动态检测时间并涨价 =================
+    function checkWinterPrice() {
+        // 设定涨价生效时间为 11月16日 0时
+        const now = new Date();
+        const targetDate = new Date(now.getFullYear(), 10, 16); // 10代表11月，16代表日期
+        
+        // 如果当前时间大于等于11月16日 0点
+        if (now >= targetDate) {
+            // 1. 显示页面顶部的公告
+            document.getElementById('winterNotice').style.display = 'block';
+            
+            // 2. 显示弹窗里的红字公告
+            document.getElementById('modalWinterNotice').style.display = 'block';
+
+            // 3. 计算并更新页面上的价格 (原价 * 1.5)
+            const prices = {
+                'p-avatar': 20,
+                'p-single': 80,
+                'p-double': 140,
+                'p-triple': 200,
+                'p-wallpaper': 240
+            };
+            
+            for (let id in prices) {
+                let newPrice = prices[id] * 1.5;
+                document.getElementById(id).innerText = newPrice;
+            }
+
+            // 4. 同步更新弹窗里的价格
+            const modalPrices = {
+                'm-avatar': 20,
+                'm-single': 80,
+                'm-double': 140,
+                'm-triple': 200,
+                'm-wallpaper': 240
+            };
+            for (let id in modalPrices) {
+                let newPrice = modalPrices[id] * 1.5;
+                document.getElementById(id).innerText = newPrice;
+            }
+        }
+    }
+
+    // 页面加载时立刻执行检查
+    checkWinterPrice();
+
     // ================= 页面切换 =================
     function switchPage(pageId, btnElement) {
         document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
@@ -372,7 +443,7 @@
         isPlaying = !isPlaying;
     }
 
-    // 解除浏览器自动播放限制：用户第一次点击网页任意位置时，自动开始播放
+    // 解除浏览器自动播放限制
     document.body.addEventListener('click', function unlockAudio() {
         if (!isPlaying) {
             bgMusic.play().then(() => {
