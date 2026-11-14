@@ -84,7 +84,6 @@
         li { margin-bottom: 12px; color: #a1a1a6; font-size: 0.95em; }
         .price { font-weight: 700; color: #fff; font-family: monospace; font-size: 1.1em;}
         
-        /* 统一的大按钮样式 */
         .btn-submit { display: block; width: 100%; text-align: center; background: #fff; color: #000; padding: 16px 0; border-radius: 12px; text-decoration: none; font-size: 1.05em; font-weight: 600; transition: all 0.3s; margin-top: 20px; border: none; cursor: pointer;}
         .btn-submit:hover { background: #e5e5ea; transform: translateY(-2px); }
 
@@ -268,18 +267,15 @@
     </div>
 </div>
 
-<!-- 左下角播放器 -->
+<!-- 左下角本地音乐播放器 -->
 <div class="music-player">
     <button class="music-btn" id="playBtn" onclick="toggleMusic()">⏸</button>
     <div class="music-info">
-        <div class="title">YOASOBI - 安可 (BGM)</div>
-        <div class="artist">Bilibili Audio</div>
+        <div class="title">YOASOBI - 安可</div>
+        <div class="artist">BGM</div>
     </div>
-</div>
-
-<!-- 隐藏的B站视频，仅用于播放音频 -->
-<div style="position: fixed; width: 0; height: 0; bottom: 0; left: 0; opacity: 0; pointer-events: none; z-index: -1;">
-    <iframe id="bgmIframe" src="//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0" allow="autoplay" frameborder="0" width="0" height="0" scrolling="no"></iframe>
+    <!-- 这里直接读取你 GitHub 仓库里的 encore.mp3 -->
+    <audio id="bgMusic" src="encore.mp3" loop></audio>
 </div>
 
 <!-- 全屏水印看图 -->
@@ -360,28 +356,32 @@
         document.getElementById('confirmModal').style.display = 'none';
     }
 
-    // ================= B站音频控制 =================
-    const bgmIframe = document.getElementById('bgmIframe');
+    // ================= 本地音乐播放控制 =================
+    const bgMusic = document.getElementById('bgMusic');
     const playBtn = document.getElementById('playBtn');
-    let isPlaying = true;
+    let isPlaying = false;
 
     function toggleMusic() {
         if (isPlaying) {
-            bgmIframe.src = ""; 
+            bgMusic.pause();
             playBtn.innerHTML = '▶';
         } else {
-            bgmIframe.src = "//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0";
+            bgMusic.play();
             playBtn.innerHTML = '⏸';
         }
         isPlaying = !isPlaying;
     }
 
-    // 解除浏览器自动播放限制：用户点击页面任意位置即可发声
+    // 解除浏览器自动播放限制：用户第一次点击网页任意位置时，自动开始播放
     document.body.addEventListener('click', function unlockAudio() {
-        if (!isPlaying) { return; }
-        bgmIframe.src = "//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0";
-        document.body.removeEventListener('click', unlockAudio);
-    }, { once: true });
+        if (!isPlaying) {
+            bgMusic.play().then(() => {
+                playBtn.innerHTML = '⏸';
+                isPlaying = true;
+                document.body.removeEventListener('click', unlockAudio);
+            }).catch(e => console.log("等待用户交互播放"));
+        }
+    });
 
     // 防右键
     document.addEventListener('contextmenu', event => event.preventDefault());
