@@ -59,7 +59,7 @@
         @keyframes slideIn { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
         /* ================= 布局与卡片 ================= */
-        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 10; }
         .page-section { display: none; opacity: 0; transform: translateY(15px); transition: opacity 0.4s ease, transform 0.4s ease; }
         .page-section.active { display: block; opacity: 1; transform: translateY(0); }
 
@@ -84,7 +84,8 @@
         li { margin-bottom: 12px; color: #a1a1a6; font-size: 0.95em; }
         .price { font-weight: 700; color: #fff; font-family: monospace; font-size: 1.1em;}
         
-        .btn-submit { display: block; text-align: center; background: #fff; color: #000; padding: 16px 0; border-radius: 12px; text-decoration: none; font-size: 1.05em; font-weight: 600; transition: all 0.3s; margin-top: 20px; border: none; cursor: pointer;}
+        /* 统一的大按钮样式 */
+        .btn-submit { display: block; width: 100%; text-align: center; background: #fff; color: #000; padding: 16px 0; border-radius: 12px; text-decoration: none; font-size: 1.05em; font-weight: 600; transition: all 0.3s; margin-top: 20px; border: none; cursor: pointer;}
         .btn-submit:hover { background: #e5e5ea; transform: translateY(-2px); }
 
         /* ================= QQ 空间传送门 ================= */
@@ -121,6 +122,11 @@
         .watermark-layer::before { content: "wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图 wuyi.quest 伍壹专属 请勿盗图"; font-size: 24px; font-weight: bold; color: #fff; font-family: monospace; line-height: 2; transform: rotate(-30deg); white-space: pre-wrap; text-align: center; }
         .close-lightbox { position: absolute; top: 20px; right: 20px; font-size: 30px; color: #fff; cursor: pointer; background: rgba(255,255,255,0.1); width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
+        /* ================= 弹窗遮罩与卡片 ================= */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .modal-card { background: #1c1c22; border: 1px solid var(--border-color); border-radius: 18px; padding: 25px; width: 90%; max-width: 420px; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+        .modal-card h3 { margin-top: 0; color: #fff; font-size: 1.15em; text-align: center; margin-bottom: 15px; }
+
         @media (max-width: 600px) {
             .nav-container { gap: 15px; } .nav-btn { font-size: 0.9em; }
             .card { padding: 25px 20px; } .status-panel { flex-direction: column; gap: 15px; }
@@ -154,7 +160,7 @@
         </div>
     </div>
 
-    <!-- 画廊 (完美保留了你要求的分类和图片范围) -->
+    <!-- 画廊 -->
     <div id="page-gallery" class="page-section">
         <div class="card">
             <h2>画廊</h2>
@@ -163,7 +169,6 @@
                 <button class="gallery-nav-btn" onclick="switchGallery('single', this)">单人立绘</button>
                 <button class="gallery-nav-btn" onclick="switchGallery('double', this)">双人立绘</button>
             </div>
-            <!-- 自动生成的图片区域 -->
             <div id="gallery-avatar" class="gallery-grid active"></div>
             <div id="gallery-single" class="gallery-grid"></div>
             <div id="gallery-double" class="gallery-grid"></div>
@@ -197,7 +202,8 @@
                 🔒 <b>排单提示：</b>如果没有及时回复，可能是排单已经截止，或者我正在上学。
             </div>
 
-            <a href="https://docs.qq.com/form/page/DWU96RnJKS1JnZWVa" target="_blank" class="btn-submit">📝 点击填写约稿表单</a>
+            <!-- 触发弹窗的按钮 -->
+            <button class="btn-submit" onclick="openConfirmModal()">📝 点击填写约稿表单</button>
         </div>
     </div>
 
@@ -238,7 +244,6 @@
         <div class="card">
             <h2>我的空间</h2>
             <p>想看我的日常，欢迎来 QQ 空间：</p>
-            <!-- 这里已经替换成了你刚才发的完整空间链接 -->
             <a href="https://user.qzone.qq.com/2319244051/infocenter?via=toolbar" target="_blank" class="qq-zone-btn">
                 <span>🚪 进入我的 QQ 空间</span>
                 <span class="arrow">➔</span>
@@ -247,16 +252,34 @@
     </div>
 </div>
 
-<!-- 音乐播放器 -->
-<div class="music-player">
-    <button class="music-btn" id="playBtn" onclick="toggleMusic()">▶</button>
-    <div class="music-info">
-        <div class="title">YOASOBI - 安可</div>
-        <div class="artist">BGM</div>
+<!-- 点击弹出的表单前注意事项预览弹窗 -->
+<div id="confirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <h3>📋 确认一下，再填写表单~</h3>
+        <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; font-size: 0.9em; margin-bottom: 20px;">
+            <p style="margin-bottom: 8px; color: #fff;"><b>价目参考：</b>头像 20 / 立绘单人 80·双人 140·三人 200 / 壁纸 240</p>
+            <p style="margin-bottom: 8px; color: #fff;"><b>工期与规则：</b>排单后 3 周内出图；可自行二改（PSD +20r）；<span style="color: #fca5a5;">商用×2，买断×3</span></p>
+            <p style="margin-bottom: 0; color: #fca5a5;"><b>拒绝项：</b>完美主义、AI</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button onclick="closeConfirmModal()" style="flex: 1; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.1); color: #fff; border: none; cursor: pointer; font-size: 0.95em;">再想想</button>
+            <a href="https://docs.qq.com/form/page/DWU96RnJKS1JnZWVa" target="_blank" style="flex: 1; padding: 12px; border-radius: 10px; background: #fff; color: #000; text-align: center; text-decoration: none; font-weight: 600; border: none; cursor: pointer; font-size: 0.95em;">已了解，去填表 ➔</a>
+        </div>
     </div>
-    <audio id="bgMusic" loop>
-        <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
-    </audio>
+</div>
+
+<!-- 左下角播放器 -->
+<div class="music-player">
+    <button class="music-btn" id="playBtn" onclick="toggleMusic()">⏸</button>
+    <div class="music-info">
+        <div class="title">YOASOBI - 安可 (BGM)</div>
+        <div class="artist">Bilibili Audio</div>
+    </div>
+</div>
+
+<!-- 隐藏的B站视频，仅用于播放音频 -->
+<div style="position: fixed; width: 0; height: 0; bottom: 0; left: 0; opacity: 0; pointer-events: none; z-index: -1;">
+    <iframe id="bgmIframe" src="//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0" allow="autoplay" frameborder="0" width="0" height="0" scrolling="no"></iframe>
 </div>
 
 <!-- 全屏水印看图 -->
@@ -269,7 +292,7 @@
 </div>
 
 <script>
-    // 切换页面
+    // ================= 页面切换 =================
     function switchPage(pageId, btnElement) {
         document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -277,7 +300,7 @@
         btnElement.classList.add('active');
     }
 
-    // 画廊分类切换
+    // ================= 画廊分类切换 =================
     function switchGallery(category, btnElement) {
         document.querySelectorAll('.gallery-grid').forEach(grid => grid.classList.remove('active'));
         document.querySelectorAll('.gallery-nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -285,7 +308,7 @@
         btnElement.classList.add('active');
     }
 
-    // 自动生成你要求的图片网格
+    // ================= 自动生成图片网格 =================
     function generateImages(containerId, start, end, isAvatar = false) {
         const container = document.getElementById(containerId);
         let html = '';
@@ -302,12 +325,11 @@
         container.innerHTML = html;
     }
 
-    // 匹配你的要求：1-10单人，100-102双人，1000-1004头像，10000置顶头像
     generateImages('gallery-single', 1, 10);
     generateImages('gallery-double', 100, 102);
     generateImages('gallery-avatar', 1000, 1004, true);
 
-    // 全屏看图与水印
+    // ================= 全屏看图与水印 =================
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     function openLightbox(src) {
@@ -320,7 +342,7 @@
         document.body.style.overflow = 'auto';
     }
 
-    // 一键复制群号
+    // ================= 一键复制群号 =================
     function copyGroup() {
         const groupNum = "1108360511";
         navigator.clipboard.writeText(groupNum).then(() => {
@@ -330,20 +352,36 @@
         });
     }
 
-    // 音乐播放器
-    const bgMusic = document.getElementById('bgMusic');
+    // ================= 弹窗控制 =================
+    function openConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'flex';
+    }
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+    }
+
+    // ================= B站音频控制 =================
+    const bgmIframe = document.getElementById('bgmIframe');
     const playBtn = document.getElementById('playBtn');
-    let isPlaying = false;
+    let isPlaying = true;
+
     function toggleMusic() {
         if (isPlaying) {
-            bgMusic.pause();
+            bgmIframe.src = ""; 
             playBtn.innerHTML = '▶';
         } else {
-            bgMusic.play();
+            bgmIframe.src = "//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0";
             playBtn.innerHTML = '⏸';
         }
         isPlaying = !isPlaying;
     }
+
+    // 解除浏览器自动播放限制：用户点击页面任意位置即可发声
+    document.body.addEventListener('click', function unlockAudio() {
+        if (!isPlaying) { return; }
+        bgmIframe.src = "//player.bilibili.com/player.html?bvid=BV1qR4y1n73u&page=1&autoplay=1&muted=0&high_quality=1&danmaku=0";
+        document.body.removeEventListener('click', unlockAudio);
+    }, { once: true });
 
     // 防右键
     document.addEventListener('contextmenu', event => event.preventDefault());
